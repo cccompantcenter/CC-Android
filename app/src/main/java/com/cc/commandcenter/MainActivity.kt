@@ -1,4 +1,5 @@
 package com.cc.commandcenter
+import com.cc.commandcenter.model.Screen
 import com.cc.commandcenter.screens.TodayScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -9,8 +10,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -18,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -29,16 +27,6 @@ private val CcGraphite = Color(0xFF1B1916)
 private val CcGold = Color(0xFFD6B56D)
 private val CcText = Color(0xFFF4EFE6)
 private val CcMuted = Color(0xFF9E978C)
-
-enum class Screen(val title: String, val icon: ImageVector) {
-    TODAY("Vandaag", Icons.Outlined.Today),
-    FOCUS("Focus", Icons.Outlined.Flag),
-    MY_TASKS("Mijn taken", Icons.Outlined.CheckCircle),
-    WAITING("Reactie afwachten", Icons.Outlined.Schedule),
-    OTHERS("Taken van anderen", Icons.Outlined.PeopleAlt),
-    IDEAS("Ideeën", Icons.Outlined.Lightbulb),
-    ARCHIVE("Archief", Icons.Outlined.Archive)
-}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
