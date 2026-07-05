@@ -1,53 +1,39 @@
 package com.cc.commandcenter.screens
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
-import com.cc.commandcenter.components.CardPlaceholder
+import com.cc.commandcenter.components.CcCard
+import com.cc.commandcenter.data.CardRepository
+import com.cc.commandcenter.model.CardStatus
 
 @Composable
 fun TodayScreen() {
-    Row(
-        modifier = Modifier.fillMaxSize()
+    val cards = CardRepository.focusCards()
+        .filter { it.status == CardStatus.OPEN }
+
+    val cardStatuses = remember {
+        mutableStateMapOf<Long, CardStatus>()
+    }
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
-            CardPlaceholder(
-                title = "Focus",
-                body = "Vandaag begint met één duidelijke focus. Deze Card wordt straks klikbaar en krijgt dezelfde Master Card-structuur als alle andere Cards."
-            )
+        cards.forEach { card ->
+            val currentStatus = cardStatuses[card.id] ?: card.status
+            val visibleCard = card.copy(status = currentStatus)
 
-            Spacer(modifier = Modifier.height(20.dp))
-
-            CardPlaceholder(
-                title = "Vandaag vraagt aandacht",
-                body = "Hier komen straks de Cards die vandaag belangrijk zijn."
-            )
-        }
-
-        Spacer(modifier = Modifier.width(24.dp))
-
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
-            CardPlaceholder(
-                title = "Snelle notitie",
-                body = "Hier komt straks het eerste schrijfvlak voor snelle invoer met de S Pen."
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            CardPlaceholder(
-                title = "Later slim maken",
-                body = "AI, herkenning en automatische voorstellen komen pas nadat de basis betrouwbaar werkt."
-            )
+            if (visibleCard.status == CardStatus.OPEN) {
+                CcCard(
+                    card = visibleCard,
+                    onToggleStatus = {
+                        cardStatuses[card.id] = CardStatus.COMPLETED
+                    }
+                )
+            }
         }
     }
 }
