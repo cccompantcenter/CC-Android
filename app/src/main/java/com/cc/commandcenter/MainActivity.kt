@@ -37,47 +37,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable
-fun Sidebar(
-    currentScreen: Screen,
-    onScreenSelected: (Screen) -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .width(260.dp)
-            .fillMaxHeight()
-            .clip(RoundedCornerShape(32.dp))
-            .background(CcGraphite)
-            .padding(24.dp)
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.cc_logo_reference),
-            contentDescription = "CC logo",
-            modifier = Modifier
-                .height(72.dp)
-                .fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Screen.values().forEach { screen ->
-            NavigationItem(
-                screen = screen,
-                selected = screen == currentScreen,
-                onClick = { onScreenSelected(screen) }
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        Text(
-            text = "Alpha 0.2.1",
-            color = CcMuted,
-            fontSize = 13.sp
-        )
-    }
-}
 
 @Composable
 fun MainContent(screen: Screen) {
