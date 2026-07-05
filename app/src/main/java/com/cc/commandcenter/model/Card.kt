@@ -7,7 +7,12 @@ data class Card(
     val category: CardCategory,
     val priority: CardPriority,
     val status: CardStatus,
-    val createdLabel: String
+    val createdLabel: String,
+
+    val notes: String = "",
+    val dueDate: String? = null,
+    val tags: List<String> = emptyList(),
+    val favorite: Boolean = false
 )
 
 enum class CardCategory {

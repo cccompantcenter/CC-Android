@@ -9,15 +9,59 @@ object CardRepository {
 
     fun focusCards(): List<Card> {
         return listOf(
-            Card(
-                id = 1L,
-                title = "Eerste echte CC Card",
-                description = "Deze Card komt nu uit de CardRepository. Daarmee is Focus niet meer hardcoded op het scherm.",
-                category = CardCategory.FOCUS,
-                priority = CardPriority.HIGH,
-                status = CardStatus.OPEN,
-                createdLabel = "Vandaag"
-            )
+
+    Card(
+        id = 1L,
+        title = "Werkoverleg voorbereiden",
+        description = "Controleer agenda en bespreekpunten.",
+        category = CardCategory.FOCUS,
+        priority = CardPriority.HIGH,
+        status = CardStatus.OPEN,
+        createdLabel = "Vandaag",
+        tags = listOf("Werk", "Overleg"),
+        favorite = true
+    ),
+
+    Card(
+        id = 2L,
+        title = "Linda bellen",
+        description = "Terugkoppeling geven over de planning.",
+        category = CardCategory.MY_TASKS,
+        priority = CardPriority.NORMAL,
+        status = CardStatus.OPEN,
+        createdLabel = "Vandaag",
+        tags = listOf("Telefoon")
+    ),
+
+    Card(
+        id = 3L,
+        title = "Reactie HR",
+        description = "Wachten op antwoord van HR.",
+        category = CardCategory.WAITING,
+        priority = CardPriority.NORMAL,
+        status = CardStatus.OPEN,
+        createdLabel = "Gisteren"
+    ),
+
+    Card(
+        id = 4L,
+        title = "Nieuw idee",
+        description = "Cards automatisch laten ordenen met AI.",
+        category = CardCategory.IDEAS,
+        priority = CardPriority.LOW,
+        status = CardStatus.OPEN,
+        createdLabel = "Vandaag"
+    ),
+
+    Card(
+       id = 5L,
+       title = "Audit afgerond",
+       description = "Alle actiepunten verwerkt.",
+       category = CardCategory.ARCHIVE,
+       priority = CardPriority.LOW,
+       status = CardStatus.COMPLETED,
+       createdLabel = "Vorige week"
+    ),
         )
     }
 }
