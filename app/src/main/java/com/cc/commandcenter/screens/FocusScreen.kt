@@ -1,38 +1,42 @@
 package com.cc.commandcenter.screens
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.unit.dp
 import com.cc.commandcenter.components.CcCard
-import com.cc.commandcenter.model.Card
-import com.cc.commandcenter.model.CardCategory
-import com.cc.commandcenter.model.CardPriority
+import com.cc.commandcenter.data.CardRepository
 import com.cc.commandcenter.model.CardStatus
 
 @Composable
 fun FocusScreen() {
-    var status by remember { mutableStateOf(CardStatus.OPEN) }
+    val cards = CardRepository.focusCards()
+    val cardStatuses = remember {
+        mutableStateMapOf<Long, CardStatus>()
+    }
 
-    val card = Card(
-        id = 1L,
-        title = "Eerste echte CC Card",
-        description = "Deze Card gebruikt nu het centrale Card-model én het herbruikbare CcCard-component.",
-        category = CardCategory.FOCUS,
-        priority = CardPriority.HIGH,
-        status = status,
-        createdLabel = "Vandaag"
-    )
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        cards.forEach { card ->
+            val currentStatus = cardStatuses[card.id] ?: card.status
+            val visibleCard = card.copy(status = currentStatus)
 
-    CcCard(
-        card = card,
-        onToggleStatus = {
-            status = if (status == CardStatus.OPEN) {
-                CardStatus.COMPLETED
-            } else {
-                CardStatus.OPEN
-            }
+            CcCard(
+                card = visibleCard,
+                onToggleStatus = {
+                    cardStatuses[card.id] =
+                        if (currentStatus == CardStatus.OPEN) {
+                            CardStatus.COMPLETED
+                        } else {
+                            CardStatus.OPEN
+                        }
+                }
+            )
         }
-    )
+    }
 }
