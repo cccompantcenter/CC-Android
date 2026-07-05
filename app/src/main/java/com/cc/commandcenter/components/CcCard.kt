@@ -2,6 +2,7 @@ package com.cc.commandcenter.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -31,7 +32,8 @@ import com.cc.commandcenter.ui.theme.CcText
 @Composable
 fun CcCard(
     card: Card,
-    onToggleStatus: () -> Unit
+    onToggleStatus: () -> Unit,
+    onClick: () -> Unit = {}
 ) {
     val isCompleted = card.status == CardStatus.COMPLETED
     val statusText = if (isCompleted) "Voltooid" else "Open"
@@ -43,6 +45,7 @@ fun CcCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(28.dp))
+            .clickable { onClick() }
             .background(cardBackground)
             .border(
                 1.dp,
@@ -92,7 +95,9 @@ fun CcCard(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             CardMetaChip("Prioriteit: ${card.priority.label()}")
             CardMetaChip("Categorie: ${card.category.label()}")
             CardMetaChip(card.createdLabel)
