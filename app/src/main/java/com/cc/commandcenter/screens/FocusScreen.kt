@@ -25,13 +25,45 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cc.commandcenter.model.Card
+import com.cc.commandcenter.model.CardCategory
+import com.cc.commandcenter.model.CardPriority
+import com.cc.commandcenter.model.CardStatus
 import com.cc.commandcenter.ui.theme.CcMuted
 import com.cc.commandcenter.ui.theme.CcText
 
 @Composable
 fun FocusScreen() {
-    var isCompleted by remember { mutableStateOf(false) }
+    var status by remember { mutableStateOf(CardStatus.OPEN) }
 
+    val card = Card(
+        id = 1L,
+        title = "Eerste echte CC Card",
+        description = "Deze Card gebruikt nu het centrale Card-model. Daarmee bouwen we niet meer losse schermtekst, maar het hart van CC.",
+        category = CardCategory.FOCUS,
+        priority = CardPriority.HIGH,
+        status = status,
+        createdLabel = "Vandaag"
+    )
+
+    FocusCard(
+        card = card,
+        onToggleStatus = {
+            status = if (status == CardStatus.OPEN) {
+                CardStatus.COMPLETED
+            } else {
+                CardStatus.OPEN
+            }
+        }
+    )
+}
+
+@Composable
+private fun FocusCard(
+    card: Card,
+    onToggleStatus: () -> Unit
+) {
+    val isCompleted = card.status == CardStatus.COMPLETED
     val statusText = if (isCompleted) "Voltooid" else "Open"
     val buttonText = if (isCompleted) "Opnieuw openen" else "Voltooien"
     val cardBackground = if (isCompleted) Color(0xFF1E241C) else Color(0xFF211E18)
@@ -56,7 +88,7 @@ fun FocusScreen() {
         ) {
             Column {
                 Text(
-                    text = "Focus",
+                    text = card.category.label(),
                     color = accentColor,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium
@@ -65,7 +97,7 @@ fun FocusScreen() {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Eerste echte CC Card",
+                    text = card.title,
                     color = CcText,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Light
@@ -82,7 +114,7 @@ fun FocusScreen() {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Deze Card laat voor het eerst gedrag zien: status, prioriteit, categorie en een actie. Nog lokaal, maar wel echt werkend.",
+            text = card.description,
             color = CcMuted,
             fontSize = 16.sp,
             lineHeight = 24.sp
@@ -93,17 +125,15 @@ fun FocusScreen() {
         Row(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            CardMetaChip(text = "Prioriteit: Hoog")
-            CardMetaChip(text = "Categorie: Focus")
-            CardMetaChip(text = "Vandaag")
+            CardMetaChip(text = "Prioriteit: ${card.priority.label()}")
+            CardMetaChip(text = "Categorie: ${card.category.label()}")
+            CardMetaChip(text = card.createdLabel)
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = {
-                isCompleted = !isCompleted
-            },
+            onClick = onToggleStatus,
             colors = ButtonDefaults.buttonColors(
                 containerColor = accentColor,
                 contentColor = Color(0xFF15130F)
@@ -125,4 +155,24 @@ private fun CardMetaChip(text: String) {
             .background(Color(0xFF181612))
             .padding(horizontal = 12.dp, vertical = 7.dp)
     )
+}
+
+private fun CardCategory.label(): String {
+    return when (this) {
+        CardCategory.TODAY -> "Vandaag"
+        CardCategory.FOCUS -> "Focus"
+        CardCategory.MY_TASKS -> "Mijn taken"
+        CardCategory.WAITING -> "Reactie afwachten"
+        CardCategory.OTHERS -> "Taken van anderen"
+        CardCategory.IDEAS -> "Ideeën"
+        CardCategory.ARCHIVE -> "Archief"
+    }
+}
+
+private fun CardPriority.label(): String {
+    return when (this) {
+        CardPriority.LOW -> "Laag"
+        CardPriority.NORMAL -> "Normaal"
+        CardPriority.HIGH -> "Hoog"
+    }
 }
