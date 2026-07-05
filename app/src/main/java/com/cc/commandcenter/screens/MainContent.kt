@@ -16,13 +16,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cc.commandcenter.components.CardPlaceholder
+import com.cc.commandcenter.model.Card
 import com.cc.commandcenter.model.Screen
 import com.cc.commandcenter.subtitleFor
 import com.cc.commandcenter.ui.theme.CcMuted
 import com.cc.commandcenter.ui.theme.CcText
 
 @Composable
-fun MainContent(screen: Screen) {
+fun MainContent(
+    screen: Screen,
+    cards: List<Card>
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -48,24 +52,30 @@ fun MainContent(screen: Screen) {
         Spacer(modifier = Modifier.height(32.dp))
 
         when (screen) {
-            Screen.TODAY -> TodayScreen()
+            Screen.TODAY -> TodayScreen(cards = cards)
+
             Screen.FOCUS -> FocusScreen()
+
             Screen.MY_TASKS -> CardPlaceholder(
                 title = "Mijn taken",
                 body = "Hier komen straks jouw eigen Cards."
             )
+
             Screen.WAITING -> CardPlaceholder(
                 title = "Reactie afwachten",
                 body = "Hier komen Cards waarbij je wacht op iemand anders."
             )
+
             Screen.OTHERS -> CardPlaceholder(
                 title = "Taken van anderen",
                 body = "Hier komen Cards die bij een ander liggen, maar wel jouw aandacht vragen."
             )
+
             Screen.IDEAS -> CardPlaceholder(
                 title = "Ideeën",
                 body = "Hier bewaar je losse gedachten voordat ze actie worden."
             )
+
             Screen.ARCHIVE -> CardPlaceholder(
                 title = "Archief",
                 body = "Hier komen afgeronde of bewaarde Cards."
