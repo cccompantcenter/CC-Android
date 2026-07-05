@@ -12,7 +12,7 @@ import com.cc.commandcenter.model.CardStatus
 
 @Composable
 fun TodayScreen() {
-    val cards = CardRepository.focusCards()
+    val cards = CardRepository.todayCards()
         .filter { it.status == CardStatus.OPEN }
 
     val cardStatuses = remember {
