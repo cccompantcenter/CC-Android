@@ -9,6 +9,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -25,8 +29,11 @@ import com.cc.commandcenter.ui.theme.CcText
 @Composable
 fun MainContent(
     screen: Screen,
-    cards: List<Card>
+    cards: List<Card>,
+    onSaveCard: (Card) -> Unit
 ) {
+    var selectedCard by remember { mutableStateOf<Card?>(null) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -35,7 +42,7 @@ fun MainContent(
             .padding(32.dp)
     ) {
         Text(
-            text = screen.title,
+            text = if (selectedCard == null) screen.title else "Card bewerken",
             color = CcText,
             fontSize = 38.sp,
             fontWeight = FontWeight.Light
@@ -44,42 +51,64 @@ fun MainContent(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = subtitleFor(screen),
+            text = if (selectedCard == null) {
+                subtitleFor(screen)
+            } else {
+                "Pas de Card aan en sla je wijziging op."
+            },
             color = CcMuted,
             fontSize = 16.sp
         )
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        when (screen) {
-            Screen.TODAY -> TodayScreen(cards = cards)
+        val activeCard = selectedCard
 
-            Screen.FOCUS -> FocusScreen()
-
-            Screen.MY_TASKS -> CardPlaceholder(
-                title = "Mijn taken",
-                body = "Hier komen straks jouw eigen Cards."
+        if (activeCard != null) {
+            CardDetailScreen(
+                card = activeCard,
+                onSave = { updatedCard ->
+                    onSaveCard(updatedCard)
+                    selectedCard = null
+                }
             )
+        } else {
+            when (screen) {
+                Screen.TODAY -> TodayScreen(
+                    cards = cards,
+                    onCardClick = { selectedCard = it }
+                )
 
-            Screen.WAITING -> CardPlaceholder(
-                title = "Reactie afwachten",
-                body = "Hier komen Cards waarbij je wacht op iemand anders."
-            )
+                Screen.FOCUS -> FocusScreen(
+                    cards = cards,
+                    onCardClick = { selectedCard = it }
+                )
 
-            Screen.OTHERS -> CardPlaceholder(
-                title = "Taken van anderen",
-                body = "Hier komen Cards die bij een ander liggen, maar wel jouw aandacht vragen."
-            )
+                Screen.MY_TASKS -> CardPlaceholder(
+                    title = "Mijn taken",
+                    body = "Hier komen straks jouw eigen Cards."
+                )
 
-            Screen.IDEAS -> CardPlaceholder(
-                title = "Ideeën",
-                body = "Hier bewaar je losse gedachten voordat ze actie worden."
-            )
+                Screen.WAITING -> CardPlaceholder(
+                    title = "Reactie afwachten",
+                    body = "Hier komen Cards waarbij je wacht op iemand anders."
+                )
 
-            Screen.ARCHIVE -> CardPlaceholder(
-                title = "Archief",
-                body = "Hier komen afgeronde of bewaarde Cards."
-            )
+                Screen.OTHERS -> CardPlaceholder(
+                    title = "Taken van anderen",
+                    body = "Hier komen Cards die bij een ander liggen, maar wel jouw aandacht vragen."
+                )
+
+                Screen.IDEAS -> CardPlaceholder(
+                    title = "Ideeën",
+                    body = "Hier bewaar je losse gedachten voordat ze actie worden."
+                )
+
+                Screen.ARCHIVE -> CardPlaceholder(
+                    title = "Archief",
+                    body = "Hier komen afgeronde of bewaarde Cards."
+                )
+            }
         }
     }
 }

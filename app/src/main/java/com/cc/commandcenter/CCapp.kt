@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.cc.commandcenter.components.Sidebar
 import com.cc.commandcenter.data.CardRepository
+import com.cc.commandcenter.model.Card
 import com.cc.commandcenter.model.Screen
 import com.cc.commandcenter.screens.MainContent
 import com.cc.commandcenter.ui.theme.CcMidnight
@@ -28,6 +29,14 @@ fun CCApp() {
         mutableStateListOf(
             *CardRepository.allCards().toTypedArray()
         )
+    }
+
+    fun saveCard(updatedCard: Card) {
+        val index = cards.indexOfFirst { it.id == updatedCard.id }
+
+        if (index != -1) {
+            cards[index] = updatedCard
+        }
     }
 
     Row(
@@ -45,7 +54,10 @@ fun CCApp() {
 
         MainContent(
             screen = currentScreen,
-            cards = cards
+            cards = cards,
+            onSaveCard = { updatedCard ->
+                saveCard(updatedCard)
+            }
         )
     }
 }

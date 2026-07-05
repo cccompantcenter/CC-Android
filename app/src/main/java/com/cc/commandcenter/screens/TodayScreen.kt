@@ -13,11 +13,12 @@ import com.cc.commandcenter.model.CardStatus
 
 @Composable
 fun TodayScreen(
-    cards: List<Card>
+    cards: List<Card>,
+    onCardClick: (Card) -> Unit
 ) {
     val todayCards = cards.filter {
         it.category == CardCategory.TODAY &&
-        it.status == CardStatus.OPEN
+            it.status == CardStatus.OPEN
     }
 
     val cardStatuses = remember {
@@ -46,7 +47,7 @@ fun TodayScreen(
                         cardStatuses[card.id] = newStatus
                     },
                     onClick = {
-                        // Navigatie volgt in een volgende sprint.
+                        onCardClick(visibleCard)
                     }
                 )
             }
