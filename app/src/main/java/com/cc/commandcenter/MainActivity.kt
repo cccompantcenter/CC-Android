@@ -1,4 +1,10 @@
 package com.cc.commandcenter
+import com.cc.commandcenter.ui.theme.CcGraphite
+import com.cc.commandcenter.ui.theme.CcMidnight
+import com.cc.commandcenter.ui.theme.CcMuted
+import com.cc.commandcenter.ui.theme.CcText
+import com.cc.commandcenter.components.NavigationItem
+import com.cc.commandcenter.components.CardPlaceholder
 import com.cc.commandcenter.model.Screen
 import com.cc.commandcenter.screens.TodayScreen
 import android.os.Bundle
@@ -22,39 +28,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-private val CcMidnight = Color(0xFF11100E)
-private val CcGraphite = Color(0xFF1B1916)
-private val CcGold = Color(0xFFD6B56D)
-private val CcText = Color(0xFFF4EFE6)
-private val CcMuted = Color(0xFF9E978C)
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             CCApp()
         }
-    }
-}
-
-@Composable
-fun CCApp() {
-    var currentScreen by remember { mutableStateOf(Screen.TODAY) }
-
-    Row(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(CcMidnight)
-            .padding(24.dp)
-    ) {
-        Sidebar(
-            currentScreen = currentScreen,
-            onScreenSelected = { currentScreen = it }
-        )
-
-        Spacer(modifier = Modifier.width(24.dp))
-
-        MainContent(currentScreen)
     }
 }
 
@@ -96,45 +75,6 @@ fun Sidebar(
             text = "Alpha 0.2.1",
             color = CcMuted,
             fontSize = 13.sp
-        )
-    }
-}
-
-@Composable
-fun NavigationItem(
-    screen: Screen,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    val background = if (selected) CcGold.copy(alpha = 0.14f) else Color.Transparent
-    val border = if (selected) CcGold.copy(alpha = 0.55f) else Color.Transparent
-    val textColor = if (selected) CcText else CcMuted
-    val iconColor = if (selected) CcGold else CcMuted
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
-            .background(background)
-            .border(1.dp, border, RoundedCornerShape(18.dp))
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = screen.icon,
-            contentDescription = screen.title,
-            tint = iconColor,
-            modifier = Modifier.size(22.dp)
-        )
-
-        Spacer(modifier = Modifier.width(14.dp))
-
-        Text(
-            text = screen.title,
-            color = textColor,
-            fontSize = 16.sp,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
         )
     }
 }
@@ -204,36 +144,5 @@ fun subtitleFor(screen: Screen): String {
         Screen.OTHERS -> "Taken die bij anderen liggen."
         Screen.IDEAS -> "Losse gedachten, plannen en mogelijkheden."
         Screen.ARCHIVE -> "Rustig bewaard, niet meer actief."
-    }
-}
-
-@Composable
-fun CardPlaceholder(
-    title: String,
-    body: String
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp))
-            .background(CcGraphite)
-            .border(1.dp, Color.White.copy(alpha = 0.06f), RoundedCornerShape(28.dp))
-            .padding(26.dp)
-    ) {
-        Text(
-            text = title,
-            color = CcText,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.SemiBold
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Text(
-            text = body,
-            color = CcMuted,
-            fontSize = 16.sp,
-            lineHeight = 24.sp
-        )
     }
 }

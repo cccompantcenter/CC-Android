@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.cc.commandcenter.CardPlaceholder
+import com.cc.commandcenter.components.CardPlaceholder
 
 @Composable
 fun TodayScreen() {
