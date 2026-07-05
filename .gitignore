@@ -1,0 +1,21 @@
+# Android / Gradle
+.gradle/
+build/
+*/build/
+app/build/
+
+# Local SDK settings
+local.properties
+
+# IDE
+.idea/
+.vscode/
+
+# Generated files
+*.class
+*.apk
+*.ap_
+*.dex
+
+# Archives
+*.zip
