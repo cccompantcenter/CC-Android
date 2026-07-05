@@ -49,10 +49,7 @@ fun MainContent(screen: Screen) {
 
         when (screen) {
             Screen.TODAY -> TodayScreen()
-            Screen.FOCUS -> CardPlaceholder(
-                title = "Focus",
-                body = "Dit wordt de eerste actieve Card achter Vandaag."
-            )
+            Screen.FOCUS -> FocusScreen()
             Screen.MY_TASKS -> CardPlaceholder(
                 title = "Mijn taken",
                 body = "Hier komen straks jouw eigen Cards."
