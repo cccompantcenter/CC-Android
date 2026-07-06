@@ -2,11 +2,15 @@ package com.cc.commandcenter.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,32 +23,38 @@ import com.cc.commandcenter.ui.theme.CcMidnight
 fun StartScreen(
     onOpenDashboard: () -> Unit
 ) {
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(CcMidnight),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .background(CcMidnight)
+            .padding(horizontal = 72.dp, vertical = 48.dp)
     ) {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            CcLogo(
+                modifier = Modifier.size(320.dp)
+            )
 
-        CcLogo(
-            modifier = Modifier.size(140.dp)
-        )
+            Column(
+                modifier = Modifier.widthIn(min = 280.dp, max = 360.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                CcPrimaryButton(
+                    text = "Directe notitie",
+                    onClick = {
+                        // volgt in latere commit
+                    }
+                )
 
-        Spacer(modifier = Modifier.height(48.dp))
-
-        CcPrimaryButton(
-            text = "Directe notitie",
-            onClick = {
-                // volgt in de volgende stap
+                CcPrimaryButton(
+                    text = "Dashboard openen",
+                    onClick = onOpenDashboard
+                )
             }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        CcPrimaryButton(
-            text = "Dashboard openen",
-            onClick = onOpenDashboard
-        )
+        }
     }
 }
