@@ -16,7 +16,6 @@ data class Card(
 )
 
 enum class CardCategory {
-    TODAY,
     FOCUS,
     MY_TASKS,
     WAITING,

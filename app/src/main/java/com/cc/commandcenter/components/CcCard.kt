@@ -97,6 +97,10 @@ fun CcCard(
             CardMetaChip("Prioriteit: ${card.priority.label()}")
             CardMetaChip(card.createdLabel)
 
+            if (card.dueDate != null) {
+                CardMetaChip("Datum: ${card.dueDate}")
+            }
+
             if (card.favorite) {
                 CardMetaChip("Favoriet")
             }
@@ -134,7 +138,6 @@ private fun CardMetaChip(text: String) {
 }
 
 private fun CardCategory.label() = when (this) {
-    CardCategory.TODAY -> "Vandaag"
     CardCategory.FOCUS -> "Focus"
     CardCategory.MY_TASKS -> "Mijn taken"
     CardCategory.WAITING -> "Reactie afwachten"

@@ -2,10 +2,10 @@ package com.cc.commandcenter.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.material3.Text
 import com.cc.commandcenter.components.CcCard
 import com.cc.commandcenter.components.CcHeader
 import com.cc.commandcenter.components.CcSectionHeader
@@ -13,30 +13,37 @@ import com.cc.commandcenter.model.Card
 import com.cc.commandcenter.model.CardCategory
 import com.cc.commandcenter.model.CardStatus
 import com.cc.commandcenter.ui.theme.CcText
+import java.time.LocalDate
 
 @Composable
 fun TodayScreen(
     cards: List<Card>,
     onCardClick: (Card) -> Unit
 ) {
-    val openCards = cards.filter { it.status == CardStatus.OPEN }
+    val today = LocalDate.now()
+
+    val todayCards = cards.filter { card ->
+        card.status == CardStatus.OPEN &&
+            card.dueDate != null &&
+            LocalDate.parse(card.dueDate) <= today
+    }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         CcHeader(
             title = "Goedemorgen Chantal",
-            subtitle = "Vandaag"
+            subtitle = "Vandaag vraagt aandacht"
         )
 
-        if (openCards.isEmpty()) {
+        if (todayCards.isEmpty()) {
             EmptyTodayState()
             return@Column
         }
 
         TodaySection(
             title = "Focus",
-            cards = openCards
+            cards = todayCards
                 .filter { it.category == CardCategory.FOCUS }
                 .take(3),
             onCardClick = onCardClick
@@ -44,19 +51,19 @@ fun TodayScreen(
 
         TodaySection(
             title = "Vandaag op te pakken",
-            cards = openCards.filter { it.category == CardCategory.MY_TASKS },
+            cards = todayCards.filter { it.category == CardCategory.MY_TASKS },
             onCardClick = onCardClick
         )
 
         TodaySection(
             title = "Reactie afwachten",
-            cards = openCards.filter { it.category == CardCategory.WAITING },
+            cards = todayCards.filter { it.category == CardCategory.WAITING },
             onCardClick = onCardClick
         )
 
         TodaySection(
-            title = "Ideeën",
-            cards = openCards.filter { it.category == CardCategory.IDEAS },
+            title = "Taken van anderen",
+            cards = todayCards.filter { it.category == CardCategory.OTHERS },
             onCardClick = onCardClick
         )
     }
@@ -65,7 +72,7 @@ fun TodayScreen(
 @Composable
 private fun EmptyTodayState() {
     Text(
-        text = "Geen open kaarten voor vandaag.",
+        text = "Geen open Cards die vandaag aandacht vragen.",
         color = CcText,
         fontSize = 16.sp
     )

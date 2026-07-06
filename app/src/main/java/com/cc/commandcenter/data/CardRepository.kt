@@ -17,6 +17,7 @@ object CardRepository {
             priority = CardPriority.HIGH,
             status = CardStatus.OPEN,
             createdLabel = "Vandaag",
+            dueDate = "2026-07-06",
             tags = listOf("Werk", "Overleg"),
             favorite = true
         ),
@@ -29,6 +30,7 @@ object CardRepository {
             priority = CardPriority.NORMAL,
             status = CardStatus.OPEN,
             createdLabel = "Vandaag",
+            dueDate = "2026-07-06",
             tags = listOf("Telefoon")
         ),
 
@@ -39,7 +41,8 @@ object CardRepository {
             category = CardCategory.WAITING,
             priority = CardPriority.NORMAL,
             status = CardStatus.OPEN,
-            createdLabel = "Gisteren"
+            createdLabel = "Gisteren",
+            dueDate = "2026-07-05"
         ),
 
         Card(
@@ -49,7 +52,8 @@ object CardRepository {
             category = CardCategory.IDEAS,
             priority = CardPriority.LOW,
             status = CardStatus.OPEN,
-            createdLabel = "Vandaag"
+            createdLabel = "Vandaag",
+            dueDate = null
         ),
 
         Card(
@@ -59,14 +63,12 @@ object CardRepository {
             category = CardCategory.ARCHIVE,
             priority = CardPriority.LOW,
             status = CardStatus.COMPLETED,
-            createdLabel = "Vorige week"
+            createdLabel = "Vorige week",
+            dueDate = "2026-07-01"
         )
     )
 
     fun allCards(): List<Card> = cards
-
-    fun todayCards(): List<Card> =
-        cards.filter { it.status == CardStatus.OPEN }
 
     fun focusCards(): List<Card> =
         cards.filter { it.category == CardCategory.FOCUS }
