@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cc.commandcenter.components.CcCard
+import com.cc.commandcenter.components.CcHeader
 import com.cc.commandcenter.model.Card
 import com.cc.commandcenter.model.CardCategory
 import com.cc.commandcenter.model.CardStatus
@@ -22,7 +23,10 @@ fun TodayScreen(
     Column(
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        TodayHeader()
+        CcHeader(
+            title = "Goedemorgen Chantal",
+            subtitle = "Vandaag"
+        )
 
         if (openCards.isEmpty()) {
             EmptyTodayState()
@@ -53,25 +57,6 @@ fun TodayScreen(
             title = "Ideeën",
             cards = openCards.filter { it.category == CardCategory.IDEAS },
             onCardClick = onCardClick
-        )
-    }
-}
-
-@Composable
-private fun TodayHeader() {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(6.dp)
-    ) {
-        Text(
-            text = "Goedemorgen Chantal",
-            color = CcText,
-            fontSize = 28.sp
-        )
-
-        Text(
-            text = "Vandaag",
-            color = CcText,
-            fontSize = 16.sp
         )
     }
 }
