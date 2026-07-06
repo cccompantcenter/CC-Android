@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cc.commandcenter.components.CardPlaceholder
 import com.cc.commandcenter.model.Card
+import com.cc.commandcenter.model.CardCategory
+import com.cc.commandcenter.model.CardPriority
 import com.cc.commandcenter.model.Screen
 import com.cc.commandcenter.subtitleFor
 import com.cc.commandcenter.ui.theme.CcMuted
@@ -31,9 +33,15 @@ fun MainContent(
     screen: Screen,
     cards: List<Card>,
     onSaveCard: (Card) -> Unit,
-    onAddCard: () -> Card
+    onCreateCard: (
+        title: String,
+        category: CardCategory,
+        priority: CardPriority,
+        dueDate: String
+    ) -> Card
 ) {
     var selectedCard by remember { mutableStateOf<Card?>(null) }
+    var isCreatingCard by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -43,7 +51,11 @@ fun MainContent(
             .padding(32.dp)
     ) {
         Text(
-            text = if (selectedCard == null) screen.title else "Card bewerken",
+            text = when {
+                isCreatingCard -> "Nieuwe Card"
+                selectedCard != null -> "Card bewerken"
+                else -> screen.title
+            },
             color = CcText,
             fontSize = 38.sp,
             fontWeight = FontWeight.Light
@@ -52,10 +64,10 @@ fun MainContent(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = if (selectedCard == null) {
-                subtitleFor(screen)
-            } else {
-                "Pas de Card aan en sla je wijziging op."
+            text = when {
+                isCreatingCard -> "Leg eerst de basis vast."
+                selectedCard != null -> "Pas de Card aan en sla je wijziging op."
+                else -> subtitleFor(screen)
             },
             color = CcMuted,
             fontSize = 16.sp
@@ -65,53 +77,76 @@ fun MainContent(
 
         val activeCard = selectedCard
 
-        if (activeCard != null) {
-            CardDetailScreen(
-                card = activeCard,
-                onSave = { updatedCard ->
-                    onSaveCard(updatedCard)
-                    selectedCard = null
-                }
-            )
-        } else {
-            when (screen) {
-                Screen.TODAY -> TodayScreen(
-                    cards = cards,
-                    onCardClick = { selectedCard = it },
-                    onAddCard = {
-                        selectedCard = onAddCard()
+        when {
+            isCreatingCard -> {
+                NewCardScreen(
+                    onCancel = {
+                        isCreatingCard = false
+                    },
+                    onCreateCard = { title, category, priority, dueDate ->
+                        val newCard = onCreateCard(
+                            title,
+                            category,
+                            priority,
+                            dueDate
+                        )
+
+                        isCreatingCard = false
+                        selectedCard = newCard
                     }
                 )
+            }
 
-                Screen.FOCUS -> FocusScreen(
-                    cards = cards,
-                    onCardClick = { selectedCard = it }
+            activeCard != null -> {
+                CardDetailScreen(
+                    card = activeCard,
+                    onSave = { updatedCard ->
+                        onSaveCard(updatedCard)
+                        selectedCard = null
+                    }
                 )
+            }
 
-                Screen.MY_TASKS -> CardPlaceholder(
-                    title = "Mijn taken",
-                    body = "Hier komen straks jouw eigen Cards."
-                )
+            else -> {
+                when (screen) {
+                    Screen.TODAY -> TodayScreen(
+                        cards = cards,
+                        onCardClick = { selectedCard = it },
+                        onAddCard = {
+                            isCreatingCard = true
+                        }
+                    )
 
-                Screen.WAITING -> CardPlaceholder(
-                    title = "Reactie afwachten",
-                    body = "Hier komen Cards waarbij je wacht op iemand anders."
-                )
+                    Screen.FOCUS -> FocusScreen(
+                        cards = cards,
+                        onCardClick = { selectedCard = it }
+                    )
 
-                Screen.OTHERS -> CardPlaceholder(
-                    title = "Taken van anderen",
-                    body = "Hier komen Cards die bij een ander liggen, maar wel jouw aandacht vragen."
-                )
+                    Screen.MY_TASKS -> CardPlaceholder(
+                        title = "Mijn taken",
+                        body = "Hier komen straks jouw eigen Cards."
+                    )
 
-                Screen.IDEAS -> CardPlaceholder(
-                    title = "Ideeën",
-                    body = "Hier bewaar je losse gedachten voordat ze actie worden."
-                )
+                    Screen.WAITING -> CardPlaceholder(
+                        title = "Reactie afwachten",
+                        body = "Hier komen Cards waarbij je wacht op iemand anders."
+                    )
 
-                Screen.ARCHIVE -> CardPlaceholder(
-                    title = "Archief",
-                    body = "Hier komen afgeronde of bewaarde Cards."
-                )
+                    Screen.OTHERS -> CardPlaceholder(
+                        title = "Taken van anderen",
+                        body = "Hier komen Cards die bij een ander liggen, maar wel jouw aandacht vragen."
+                    )
+
+                    Screen.IDEAS -> CardPlaceholder(
+                        title = "Ideeën",
+                        body = "Hier bewaar je losse gedachten voordat ze actie worden."
+                    )
+
+                    Screen.ARCHIVE -> CardPlaceholder(
+                        title = "Archief",
+                        body = "Hier komen afgeronde of bewaarde Cards."
+                    )
+                }
             }
         }
     }

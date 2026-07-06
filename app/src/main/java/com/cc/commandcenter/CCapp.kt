@@ -23,7 +23,6 @@ import com.cc.commandcenter.model.CardStatus
 import com.cc.commandcenter.model.Screen
 import com.cc.commandcenter.screens.MainContent
 import com.cc.commandcenter.ui.theme.CcMidnight
-import java.time.LocalDate
 
 @Composable
 fun CCApp() {
@@ -43,16 +42,21 @@ fun CCApp() {
         }
     }
 
-    fun addCard(): Card {
+    fun createCard(
+        title: String,
+        category: CardCategory,
+        priority: CardPriority,
+        dueDate: String
+    ): Card {
         val newCard = Card(
             id = (cards.maxOfOrNull { it.id } ?: 0L) + 1L,
-            title = "Nieuwe Card",
+            title = title,
             description = "",
-            category = CardCategory.MY_TASKS,
-            priority = CardPriority.NORMAL,
+            category = category,
+            priority = priority,
             status = CardStatus.OPEN,
             createdLabel = "Vandaag",
-            dueDate = LocalDate.now().toString()
+            dueDate = dueDate
         )
 
         cards.add(0, newCard)
@@ -78,8 +82,13 @@ fun CCApp() {
             onSaveCard = { updatedCard ->
                 saveCard(updatedCard)
             },
-            onAddCard = {
-                addCard()
+            onCreateCard = { title, category, priority, dueDate ->
+                createCard(
+                    title = title,
+                    category = category,
+                    priority = priority,
+                    dueDate = dueDate
+                )
             }
         )
     }
