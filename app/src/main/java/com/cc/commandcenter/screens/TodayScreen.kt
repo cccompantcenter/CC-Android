@@ -10,7 +10,6 @@ import com.cc.commandcenter.components.CcCard
 import com.cc.commandcenter.model.Card
 import com.cc.commandcenter.model.CardCategory
 import com.cc.commandcenter.model.CardStatus
-import com.cc.commandcenter.ui.theme.CcMuted
 import com.cc.commandcenter.ui.theme.CcText
 
 @Composable
@@ -23,9 +22,18 @@ fun TodayScreen(
     Column(
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
+        TodayHeader()
+
+        if (openCards.isEmpty()) {
+            EmptyTodayState()
+            return@Column
+        }
+
         TodaySection(
             title = "Focus",
-            cards = openCards.filter { it.category == CardCategory.FOCUS },
+            cards = openCards
+                .filter { it.category == CardCategory.FOCUS }
+                .take(3),
             onCardClick = onCardClick
         )
 
@@ -47,6 +55,34 @@ fun TodayScreen(
             onCardClick = onCardClick
         )
     }
+}
+
+@Composable
+private fun TodayHeader() {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Text(
+            text = "Goedemorgen Chantal",
+            color = CcText,
+            fontSize = 28.sp
+        )
+
+        Text(
+            text = "Vandaag",
+            color = CcText,
+            fontSize = 16.sp
+        )
+    }
+}
+
+@Composable
+private fun EmptyTodayState() {
+    Text(
+        text = "Geen open kaarten voor vandaag.",
+        color = CcText,
+        fontSize = 16.sp
+    )
 }
 
 @Composable
