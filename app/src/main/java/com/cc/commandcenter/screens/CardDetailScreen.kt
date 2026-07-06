@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cc.commandcenter.components.CcLogo
 import com.cc.commandcenter.components.CcPrimaryButton
 import com.cc.commandcenter.model.Card
 import com.cc.commandcenter.model.CardCategory
@@ -64,12 +65,7 @@ fun CardDetailScreen(
             .padding(32.dp),
         verticalArrangement = Arrangement.spacedBy(22.dp)
     ) {
-        Text(
-            text = "Command Center",
-            color = CcGold,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold
-        )
+        CcLogo()
 
         Text(
             text = title.ifBlank { "Nieuwe Card" },
