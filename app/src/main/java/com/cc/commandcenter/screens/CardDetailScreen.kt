@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -18,6 +17,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cc.commandcenter.components.CcHeader
+import com.cc.commandcenter.components.CcPrimaryButton
 import com.cc.commandcenter.model.Card
 import com.cc.commandcenter.model.CardPriority
 import com.cc.commandcenter.model.CardStatus
@@ -40,10 +41,9 @@ fun CardDetailScreen(
             .padding(32.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        Text(
-            text = "Card Detail",
-            color = CcText,
-            fontSize = 28.sp
+        CcHeader(
+            title = "Card Detail",
+            subtitle = card.category.toString()
         )
 
         OutlinedTextField(
@@ -92,11 +92,6 @@ fun CardDetailScreen(
         }
 
         Text(
-            text = "Categorie: ${card.category}",
-            color = CcText
-        )
-
-        Text(
             text = "Tags: ${card.tags.joinToString()}",
             color = CcText
         )
@@ -112,7 +107,8 @@ fun CardDetailScreen(
             color = CcText
         )
 
-        Button(
+        CcPrimaryButton(
+            text = "Opslaan",
             onClick = {
                 val updatedCard = card.copy(
                     title = title,
@@ -124,8 +120,6 @@ fun CardDetailScreen(
 
                 onSave(updatedCard)
             }
-        ) {
-            Text("Opslaan")
-        }
+        )
     }
 }
