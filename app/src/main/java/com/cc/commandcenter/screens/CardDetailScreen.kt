@@ -1,14 +1,15 @@
 package com.cc.commandcenter.screens
 
-import com.cc.commandcenter.util.formatDueDate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,8 +29,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cc.commandcenter.components.CcActionBar
 import com.cc.commandcenter.components.CcHeader
-import com.cc.commandcenter.components.CcPrimaryButton
 import com.cc.commandcenter.model.Card
 import com.cc.commandcenter.model.CardCategory
 import com.cc.commandcenter.model.CardPriority
@@ -37,6 +38,7 @@ import com.cc.commandcenter.model.CardStatus
 import com.cc.commandcenter.ui.theme.CcGold
 import com.cc.commandcenter.ui.theme.CcMuted
 import com.cc.commandcenter.ui.theme.CcText
+import com.cc.commandcenter.util.formatDueDate
 
 @Composable
 fun CardDetailScreen(
@@ -71,33 +73,6 @@ fun CardDetailScreen(
             subtitle = "${card.category.label()} • ${priority.label()} • ${status.label()}"
         )
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            CcPrimaryButton(
-                text = "← Terug",
-                onClick = onBack
-            )
-
-            CcPrimaryButton(
-                text = "Opslaan",
-                onClick = { onSave(updatedCard) }
-            )
-
-            CcPrimaryButton(
-                text = "Verwijderen",
-                onClick = onDelete
-            )
-        }
-
-        Text(
-            text = "+ Nieuwe notitie",
-            color = CcGold,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold
-        )
-
         SectionTitle("Titel")
 
         OutlinedTextField(
@@ -105,16 +80,6 @@ fun CardDetailScreen(
             value = title,
             onValueChange = { title = it },
             singleLine = true,
-            colors = cardTextFieldColors()
-        )
-
-        SectionTitle("Beschrijving")
-
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
-            value = description,
-            onValueChange = { description = it },
-            minLines = 5,
             colors = cardTextFieldColors()
         )
 
@@ -135,6 +100,52 @@ fun CardDetailScreen(
             colors = cardTextFieldColors()
         )
 
+        SectionTitle("Beschrijving")
+
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = description,
+            onValueChange = { description = it },
+            minLines = 5,
+            colors = cardTextFieldColors()
+        )
+
+        SectionTitle("Notities")
+
+        Text(
+            text = "+ Nieuwe notitie",
+            color = CcGold,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Text(
+            text = if (card.notes.isBlank()) "Nog geen notities." else card.notes,
+            color = CcText,
+            fontSize = 18.sp
+        )
+
+        SectionTitle("Tags")
+
+        Text(
+            text = if (card.tags.isEmpty()) "Nog geen tags." else card.tags.joinToString("   ") { "🏷 $it" },
+            color = CcText,
+            fontSize = 18.sp
+        )
+
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Checkbox(
+                checked = favorite,
+                onCheckedChange = { favorite = it }
+            )
+
+            Text(
+                text = "Favoriet",
+                color = CcText,
+                fontSize = 18.sp
+            )
+        }
+
         SectionTitle("Prioriteit")
 
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -150,33 +161,14 @@ fun CardDetailScreen(
             ChoiceChip("Voltooid", status == CardStatus.COMPLETED) { status = CardStatus.COMPLETED }
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Checkbox(
-                checked = favorite,
-                onCheckedChange = { favorite = it }
-            )
+        Spacer(modifier = Modifier.height(24.dp))
 
-            Text(
-                text = "Favoriet",
-                color = CcText,
-                fontSize = 18.sp
-            )
-        }
-
-        SectionTitle("Tags")
-
-        Text(
-            text = if (card.tags.isEmpty()) "Nog geen tags." else card.tags.joinToString("   ") { "🏷 $it" },
-            color = CcText,
-            fontSize = 18.sp
-        )
-
-        SectionTitle("Notities")
-
-        Text(
-            text = if (card.notes.isBlank()) "Nog geen notities." else card.notes,
-            color = CcText,
-            fontSize = 18.sp
+        CcActionBar(
+            onBack = onBack,
+            onDelete = onDelete,
+            onSave = {
+                onSave(updatedCard)
+            }
         )
     }
 }
