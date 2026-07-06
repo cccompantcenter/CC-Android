@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -47,33 +49,85 @@ fun CardDetailScreen(
     var status by remember { mutableStateOf(card.status) }
     var favorite by remember { mutableStateOf(card.favorite) }
 
+    val updatedCard = card.copy(
+        title = title,
+        description = description,
+        priority = priority,
+        status = status,
+        favorite = favorite
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(32.dp),
         verticalArrangement = Arrangement.spacedBy(22.dp)
     ) {
-        CardDetailHeader(
-            title = title,
-            category = card.category,
-            priority = priority,
-            status = status
+        Text(
+            text = "Command Center",
+            color = CcGold,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold
         )
+
+        Text(
+            text = title.ifBlank { "Nieuwe Card" },
+            color = CcText,
+            fontSize = 38.sp,
+            fontWeight = FontWeight.Bold,
+            lineHeight = 44.sp
+        )
+
+        Text(
+            text = "${card.category.label()} • ${priority.label()} • ${status.label()}",
+            color = CcText,
+            fontSize = 18.sp
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            CcPrimaryButton(
+                text = "← Terug",
+                onClick = onBack
+            )
+
+            CcPrimaryButton(
+                text = "Opslaan",
+                onClick = { onSave(updatedCard) }
+            )
+
+            CcPrimaryButton(
+                text = "Verwijderen",
+                onClick = onDelete
+            )
+        }
+
+        Text(
+            text = "+ Nieuwe notitie",
+            color = CcGold,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        SectionTitle("Titel")
 
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = title,
             onValueChange = { title = it },
-            label = { Text("Titel") },
             singleLine = true,
             colors = cardTextFieldColors()
         )
+
+        SectionTitle("Beschrijving")
 
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = description,
             onValueChange = { description = it },
-            label = { Text("Beschrijving") },
             minLines = 5,
             colors = cardTextFieldColors()
         )
@@ -102,7 +156,7 @@ fun CardDetailScreen(
             Text(
                 text = "Favoriet",
                 color = CcText,
-                fontSize = 17.sp
+                fontSize = 18.sp
             )
         }
 
@@ -111,87 +165,15 @@ fun CardDetailScreen(
         Text(
             text = if (card.tags.isEmpty()) "Nog geen tags." else card.tags.joinToString("   ") { "🏷 $it" },
             color = CcText,
-            fontSize = 17.sp
+            fontSize = 18.sp
         )
 
         SectionTitle("Notities")
 
         Text(
-            text = "+ Nieuwe notitie",
-            color = CcGold,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Medium
-        )
-
-        if (card.notes.isNotBlank()) {
-            Text(
-                text = card.notes,
-                color = CcText,
-                fontSize = 16.sp
-            )
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            CcPrimaryButton(
-                text = "Terug",
-                onClick = onBack
-            )
-
-            CcPrimaryButton(
-                text = "Verwijderen",
-                onClick = onDelete
-            )
-
-            CcPrimaryButton(
-                text = "Opslaan",
-                onClick = {
-                    val updatedCard = card.copy(
-                        title = title,
-                        description = description,
-                        priority = priority,
-                        status = status,
-                        favorite = favorite
-                    )
-
-                    onSave(updatedCard)
-                }
-            )
-        }
-    }
-}
-
-@Composable
-private fun CardDetailHeader(
-    title: String,
-    category: CardCategory,
-    priority: CardPriority,
-    status: CardStatus
-) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        Text(
-            text = "Command Center",
-            color = CcGold,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.SemiBold
-        )
-
-        Text(
-            text = title.ifBlank { "Nieuwe Card" },
+            text = if (card.notes.isBlank()) "Nog geen notities." else card.notes,
             color = CcText,
-            fontSize = 38.sp,
-            fontWeight = FontWeight.SemiBold,
-            lineHeight = 44.sp
-        )
-
-        Text(
-            text = "${category.label()} • ${priority.label()} • ${status.label()}",
-            color = CcText,
-            fontSize = 17.sp
+            fontSize = 18.sp
         )
     }
 }
@@ -200,9 +182,9 @@ private fun CardDetailHeader(
 private fun SectionTitle(text: String) {
     Text(
         text = text,
-        color = CcText,
-        fontSize = 21.sp,
-        fontWeight = FontWeight.SemiBold
+        color = CcGold,
+        fontSize = 22.sp,
+        fontWeight = FontWeight.Bold
     )
 }
 
@@ -214,18 +196,19 @@ private fun ChoiceChip(
 ) {
     Text(
         text = if (selected) "● $text" else "○ $text",
-        color = if (selected) CcText else CcMuted,
-        fontSize = 16.sp,
+        color = CcText,
+        fontSize = 17.sp,
+        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
         modifier = Modifier
             .clip(RoundedCornerShape(999.dp))
-            .background(if (selected) CcGold.copy(alpha = 0.22f) else Color(0xFF181612))
+            .background(if (selected) CcGold.copy(alpha = 0.28f) else Color(0xFF211E18))
             .border(
                 width = 1.dp,
-                color = if (selected) CcGold.copy(alpha = 0.75f) else CcMuted.copy(alpha = 0.30f),
+                color = if (selected) CcGold else CcMuted.copy(alpha = 0.55f),
                 shape = RoundedCornerShape(999.dp)
             )
             .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 9.dp)
+            .padding(horizontal = 18.dp, vertical = 10.dp)
     )
 }
 
@@ -237,7 +220,7 @@ private fun cardTextFieldColors() = OutlinedTextFieldDefaults.colors(
     unfocusedLabelColor = CcText,
     cursorColor = CcGold,
     focusedBorderColor = CcGold,
-    unfocusedBorderColor = CcMuted.copy(alpha = 0.65f)
+    unfocusedBorderColor = CcText.copy(alpha = 0.65f)
 )
 
 private fun CardCategory.label() = when (this) {
