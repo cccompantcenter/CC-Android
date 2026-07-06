@@ -5,39 +5,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.cc.commandcenter.data.QuickNoteRepository
 import com.cc.commandcenter.ui.theme.CcMidnight
 
-/**
- * Nog Organiseren
- *
- * Workflow Command Center
- *
- * Gedachte
- *      ↓
- * Directe notitie
- *      ↓
- * Nog organiseren
- *      ↓
- * AI doet voorstellen (later)
- *      ↓
- * Gebruiker beslist
- *      ↓
- * Card
- *      ↓
- * Vandaag / Focus / Wachten / Archief
- *
- * Ontwerpprincipes
- * - Eerst schrijven, daarna organiseren.
- * - AI ondersteunt, beslist nooit.
- * - Schrijven moet altijd sneller zijn dan organiseren.
- * - Ontworpen voor toetsenbord, S Pen, spraak en toekomstige invoervormen.
- */
 @Composable
 fun NogOrganiserenScreen() {
+
+    val notes = QuickNoteRepository.notes
 
     Column(
         modifier = Modifier
@@ -49,12 +29,24 @@ fun NogOrganiserenScreen() {
 
         Text("Nog organiseren")
 
-        Text(
-            "Hier verschijnen alle directe notities totdat je besluit wat ermee gebeurt."
-        )
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
 
-        Text(
-            "Binnenkort kun je hier notities bekijken, bewerken, samenvoegen of omzetten naar een Card."
-        )
+            items(notes) { note ->
+
+                Column {
+
+                    Text(note.createdAt)
+
+                    Text(note.text)
+
+                }
+
+            }
+
+        }
+
     }
+
 }
