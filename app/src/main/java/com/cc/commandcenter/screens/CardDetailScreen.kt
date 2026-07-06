@@ -165,7 +165,9 @@ fun CardDetailScreen(
 
         CcActionBar(
             onBack = onBack,
-            onDelete = onDelete,
+            onDelete = {
+                onDelete()
+            },
             onSave = {
                 onSave(updatedCard)
             }

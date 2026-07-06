@@ -16,6 +16,7 @@ class MainActivity : ComponentActivity() {
 fun subtitleFor(screen: Screen): String {
     return when (screen) {
         Screen.TODAY -> "Je dagelijkse startpunt. Eerst overzicht, daarna pas details."
+        Screen.NOG_ORGANISEREN -> "Leg gedachten direct vast en organiseer ze later."
         Screen.FOCUS -> "De belangrijkste Card van dit moment."
         Screen.MY_TASKS -> "Alles wat jij zelf moet oppakken."
         Screen.WAITING -> "Alles waar je nog reactie op verwacht."

@@ -111,6 +111,11 @@ fun MainContent(
                         onAddCard = { isCreatingCard = true }
                     )
 
+                    Screen.NOG_ORGANISEREN -> CardPlaceholder(
+                        "Nog organiseren",
+                        "Hier komen alle snelle notities binnen."
+                    )
+
                     Screen.FOCUS -> FocusScreen(
                         cards = cards,
                         onCardClick = { selectedCard = it }

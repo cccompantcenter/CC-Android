@@ -1,5 +1,5 @@
 package com.cc.commandcenter.model
-
+import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material.icons.outlined.CheckCircle
@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 enum class Screen(val title: String, val icon: ImageVector) {
     TODAY("Vandaag", Icons.Outlined.Today),
+    NOG_ORGANISEREN("Nog organiseren", Icons.Outlined.EditNote),
     FOCUS("Focus", Icons.Outlined.Flag),
     MY_TASKS("Mijn taken", Icons.Outlined.CheckCircle),
     WAITING("Reactie afwachten", Icons.Outlined.Schedule),
