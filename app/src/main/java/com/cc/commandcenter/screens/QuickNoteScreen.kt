@@ -13,6 +13,27 @@ import androidx.compose.ui.unit.dp
 import com.cc.commandcenter.components.CcActionBar
 import com.cc.commandcenter.ui.theme.CcMidnight
 
+/**
+ * Directe notitie
+ *
+ * Kernprincipe:
+ * CC is ontworpen als S Pen-first schrijfervaring.
+ *
+ * De gebruiker moet een gedachte kunnen opschrijven alsof hij op papier schrijft.
+ * Handschrift moet later feilloos herkend kunnen worden en daarna als tekst
+ * in Nog organiseren verschijnen.
+ *
+ * Nu:
+ * - toetsenbordinput
+ *
+ * Later:
+ * - S Pen handschrift
+ * - handschriftherkenning
+ * - omzetting naar QuickNote
+ * - AI doet voorstellen
+ * - gebruiker beslist
+ */
+
 @Composable
 fun QuickNoteScreen(
     onBack: () -> Unit
