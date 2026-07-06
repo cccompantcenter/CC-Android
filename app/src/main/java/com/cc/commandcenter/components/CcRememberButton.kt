@@ -18,11 +18,13 @@ import com.cc.commandcenter.ui.theme.CcMidnight
 
 @Composable
 fun CcRememberButton(
-    onClick: () -> Unit
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
     ) {
+Column(
+    modifier = modifier,
+    horizontalAlignment = Alignment.CenterHorizontally
+) {
 
         OutlinedButton(
             onClick = onClick,
