@@ -63,6 +63,10 @@ fun CCApp() {
         return newCard
     }
 
+    fun deleteCard(card: Card) {
+        cards.removeAll { it.id == card.id }
+    }
+
     Row(
         modifier = Modifier
             .fillMaxSize()
@@ -81,6 +85,9 @@ fun CCApp() {
             cards = cards,
             onSaveCard = { updatedCard ->
                 saveCard(updatedCard)
+            },
+            onDeleteCard = { card ->
+                deleteCard(card)
             },
             onCreateCard = { title, category, priority, dueDate ->
                 createCard(

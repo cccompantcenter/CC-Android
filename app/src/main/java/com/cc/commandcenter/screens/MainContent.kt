@@ -33,6 +33,7 @@ fun MainContent(
     screen: Screen,
     cards: List<Card>,
     onSaveCard: (Card) -> Unit,
+    onDeleteCard: (Card) -> Unit,
     onCreateCard: (
         title: String,
         category: CardCategory,
@@ -50,30 +51,24 @@ fun MainContent(
             .background(Color(0xFF15130F))
             .padding(32.dp)
     ) {
-        Text(
-            text = when {
-                isCreatingCard -> "Nieuwe Card"
-                selectedCard != null -> "Card bewerken"
-                else -> screen.title
-            },
-            color = CcText,
-            fontSize = 38.sp,
-            fontWeight = FontWeight.Light
-        )
+        if (!isCreatingCard && selectedCard == null) {
+            Text(
+                text = screen.title,
+                color = CcText,
+                fontSize = 38.sp,
+                fontWeight = FontWeight.Light
+            )
 
-        Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
-            text = when {
-                isCreatingCard -> "Leg eerst de basis vast."
-                selectedCard != null -> "Pas de Card aan en sla je wijziging op."
-                else -> subtitleFor(screen)
-            },
-            color = CcMuted,
-            fontSize = 16.sp
-        )
+            Text(
+                text = subtitleFor(screen),
+                color = CcMuted,
+                fontSize = 16.sp
+            )
 
-        Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(32.dp))
+        }
 
         val activeCard = selectedCard
 
@@ -84,13 +79,7 @@ fun MainContent(
                         isCreatingCard = false
                     },
                     onCreateCard = { title, category, priority, dueDate ->
-                        val newCard = onCreateCard(
-                            title,
-                            category,
-                            priority,
-                            dueDate
-                        )
-
+                        val newCard = onCreateCard(title, category, priority, dueDate)
                         isCreatingCard = false
                         selectedCard = newCard
                     }
@@ -100,6 +89,13 @@ fun MainContent(
             activeCard != null -> {
                 CardDetailScreen(
                     card = activeCard,
+                    onBack = {
+                        selectedCard = null
+                    },
+                    onDelete = {
+                        onDeleteCard(activeCard)
+                        selectedCard = null
+                    },
                     onSave = { updatedCard ->
                         onSaveCard(updatedCard)
                         selectedCard = null
@@ -112,9 +108,7 @@ fun MainContent(
                     Screen.TODAY -> TodayScreen(
                         cards = cards,
                         onCardClick = { selectedCard = it },
-                        onAddCard = {
-                            isCreatingCard = true
-                        }
+                        onAddCard = { isCreatingCard = true }
                     )
 
                     Screen.FOCUS -> FocusScreen(
@@ -122,30 +116,11 @@ fun MainContent(
                         onCardClick = { selectedCard = it }
                     )
 
-                    Screen.MY_TASKS -> CardPlaceholder(
-                        title = "Mijn taken",
-                        body = "Hier komen straks jouw eigen Cards."
-                    )
-
-                    Screen.WAITING -> CardPlaceholder(
-                        title = "Reactie afwachten",
-                        body = "Hier komen Cards waarbij je wacht op iemand anders."
-                    )
-
-                    Screen.OTHERS -> CardPlaceholder(
-                        title = "Taken van anderen",
-                        body = "Hier komen Cards die bij een ander liggen, maar wel jouw aandacht vragen."
-                    )
-
-                    Screen.IDEAS -> CardPlaceholder(
-                        title = "Ideeën",
-                        body = "Hier bewaar je losse gedachten voordat ze actie worden."
-                    )
-
-                    Screen.ARCHIVE -> CardPlaceholder(
-                        title = "Archief",
-                        body = "Hier komen afgeronde of bewaarde Cards."
-                    )
+                    Screen.MY_TASKS -> CardPlaceholder("Mijn taken", "Hier komen straks jouw eigen Cards.")
+                    Screen.WAITING -> CardPlaceholder("Reactie afwachten", "Hier komen Cards waarbij je wacht op iemand anders.")
+                    Screen.OTHERS -> CardPlaceholder("Taken van anderen", "Hier komen Cards die bij een ander liggen.")
+                    Screen.IDEAS -> CardPlaceholder("Ideeën", "Hier bewaar je losse gedachten voordat ze actie worden.")
+                    Screen.ARCHIVE -> CardPlaceholder("Archief", "Hier komen afgeronde of bewaarde Cards.")
                 }
             }
         }
