@@ -2,12 +2,13 @@ package com.cc.commandcenter.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material3.Text
 import com.cc.commandcenter.components.CcCard
 import com.cc.commandcenter.components.CcHeader
+import com.cc.commandcenter.components.CcSectionHeader
 import com.cc.commandcenter.model.Card
 import com.cc.commandcenter.model.CardCategory
 import com.cc.commandcenter.model.CardStatus
@@ -81,17 +82,15 @@ private fun TodaySection(
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text(
-            text = title,
-            color = CcText,
-            fontSize = 22.sp
+        CcSectionHeader(
+            title = title
         )
 
         cards.forEach { card ->
             CcCard(
                 card = card,
                 onToggleStatus = {
-                    // Status wijzigen via Vandaag volgt later bewust centraal.
+                    // Status wijzigen volgt later centraal.
                 },
                 onClick = {
                     onCardClick(card)
