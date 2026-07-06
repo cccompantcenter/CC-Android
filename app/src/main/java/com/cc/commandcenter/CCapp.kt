@@ -1,5 +1,5 @@
 package com.cc.commandcenter
-
+import com.cc.commandcenter.screens.StartScreen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,6 +26,7 @@ import com.cc.commandcenter.ui.theme.CcMidnight
 
 @Composable
 fun CCApp() {
+    var showStartScreen by remember { mutableStateOf(true) }
     var currentScreen by remember { mutableStateOf(Screen.TODAY) }
 
     val cards = remember {
@@ -66,7 +67,14 @@ fun CCApp() {
     fun deleteCard(card: Card) {
         cards.removeAll { it.id == card.id }
     }
-
+    if (showStartScreen) {
+    StartScreen(
+        onOpenDashboard = {
+            showStartScreen = false
+        }
+    )
+    return
+}
     Row(
         modifier = Modifier
             .fillMaxSize()
