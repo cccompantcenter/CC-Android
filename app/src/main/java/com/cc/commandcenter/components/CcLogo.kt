@@ -13,7 +13,7 @@ fun CcLogo(
     modifier: Modifier = Modifier
 ) {
     Image(
-        painter = painterResource(id = R.drawable.cc_design_reference),
+        painter = painterResource(id = R.drawable.cc_logo),
         contentDescription = "CC Command Center",
         modifier = modifier.height(72.dp)
     )
