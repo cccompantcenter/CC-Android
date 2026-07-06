@@ -1,13 +1,18 @@
 package com.cc.commandcenter.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -15,13 +20,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.cc.commandcenter.components.CcHeader
 import com.cc.commandcenter.components.CcPrimaryButton
 import com.cc.commandcenter.model.Card
+import com.cc.commandcenter.model.CardCategory
 import com.cc.commandcenter.model.CardPriority
 import com.cc.commandcenter.model.CardStatus
+import com.cc.commandcenter.ui.theme.CcGold
+import com.cc.commandcenter.ui.theme.CcMuted
 import com.cc.commandcenter.ui.theme.CcText
 
 @Composable
@@ -31,26 +41,30 @@ fun CardDetailScreen(
 ) {
     var title by remember { mutableStateOf(card.title) }
     var description by remember { mutableStateOf(card.description) }
-    var priority by remember { mutableStateOf(card.priority.toString()) }
-    var status by remember { mutableStateOf(card.status.toString()) }
+    var priority by remember { mutableStateOf(card.priority) }
+    var status by remember { mutableStateOf(card.status) }
     var favorite by remember { mutableStateOf(card.favorite) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(32.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        CcHeader(
-            title = "Card Detail",
-            subtitle = card.category.toString()
+        CardDetailHeader(
+            title = title,
+            category = card.category,
+            priority = priority,
+            status = status
         )
 
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = title,
             onValueChange = { title = it },
-            label = { Text("Titel") }
+            label = { Text("Titel") },
+            singleLine = true,
+            colors = cardTextFieldColors()
         )
 
         OutlinedTextField(
@@ -58,28 +72,42 @@ fun CardDetailScreen(
             value = description,
             onValueChange = { description = it },
             label = { Text("Beschrijving") },
-            minLines = 5
+            minLines = 5,
+            colors = cardTextFieldColors()
         )
+
+        SectionTitle("Prioriteit")
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedTextField(
-                modifier = Modifier.weight(1f),
-                value = priority,
-                onValueChange = { priority = it },
-                label = { Text("Prioriteit") }
-            )
-
-            OutlinedTextField(
-                modifier = Modifier.weight(1f),
-                value = status,
-                onValueChange = { status = it },
-                label = { Text("Status") }
-            )
+            ChoiceChip("Laag", priority == CardPriority.LOW) {
+                priority = CardPriority.LOW
+            }
+            ChoiceChip("Normaal", priority == CardPriority.NORMAL) {
+                priority = CardPriority.NORMAL
+            }
+            ChoiceChip("Hoog", priority == CardPriority.HIGH) {
+                priority = CardPriority.HIGH
+            }
         }
 
-        Row {
+        SectionTitle("Status")
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            ChoiceChip("Open", status == CardStatus.OPEN) {
+                status = CardStatus.OPEN
+            }
+            ChoiceChip("Voltooid", status == CardStatus.COMPLETED) {
+                status = CardStatus.COMPLETED
+            }
+        }
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             Checkbox(
                 checked = favorite,
                 onCheckedChange = { favorite = it }
@@ -87,24 +115,25 @@ fun CardDetailScreen(
 
             Text(
                 text = "Favoriet",
-                color = CcText
+                color = CcText,
+                fontSize = 16.sp
             )
         }
 
-        Text(
-            text = "Tags: ${card.tags.joinToString()}",
-            color = CcText
-        )
+        SectionTitle("Tags")
 
         Text(
-            text = "Notities",
+            text = if (card.tags.isEmpty()) "Nog geen tags." else card.tags.joinToString("   ") { "🏷 $it" },
             color = CcText,
-            fontSize = 20.sp
+            fontSize = 16.sp
         )
 
+        SectionTitle("Notities")
+
         Text(
-            text = if (card.notes.isBlank()) "Nog geen notities." else card.notes,
-            color = CcText
+            text = if (card.notes.isBlank()) "+ Nieuwe notitie" else card.notes,
+            color = if (card.notes.isBlank()) CcGold else CcText,
+            fontSize = 16.sp
         )
 
         CcPrimaryButton(
@@ -113,8 +142,8 @@ fun CardDetailScreen(
                 val updatedCard = card.copy(
                     title = title,
                     description = description,
-                    priority = CardPriority.valueOf(priority),
-                    status = CardStatus.valueOf(status),
+                    priority = priority,
+                    status = status,
                     favorite = favorite
                 )
 
@@ -122,4 +151,100 @@ fun CardDetailScreen(
             }
         )
     }
+}
+
+@Composable
+private fun CardDetailHeader(
+    title: String,
+    category: CardCategory,
+    priority: CardPriority,
+    status: CardStatus
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Text(
+            text = "CC",
+            color = CcGold,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+
+        Text(
+            text = title.ifBlank { "Nieuwe Card" },
+            color = CcText,
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Light
+        )
+
+        Text(
+            text = "${category.label()} • ${priority.label()} • ${status.label()}",
+            color = CcMuted,
+            fontSize = 16.sp
+        )
+    }
+}
+
+@Composable
+private fun SectionTitle(text: String) {
+    Text(
+        text = text,
+        color = CcText,
+        fontSize = 20.sp,
+        fontWeight = FontWeight.Medium
+    )
+}
+
+@Composable
+private fun ChoiceChip(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Text(
+        text = if (selected) "● $text" else "○ $text",
+        color = if (selected) CcText else CcMuted,
+        fontSize = 15.sp,
+        modifier = Modifier
+            .clip(RoundedCornerShape(999.dp))
+            .background(if (selected) CcGold.copy(alpha = 0.18f) else Color(0xFF181612))
+            .border(
+                width = 1.dp,
+                color = if (selected) CcGold.copy(alpha = 0.65f) else CcMuted.copy(alpha = 0.22f),
+                shape = RoundedCornerShape(999.dp)
+            )
+            .clickable { onClick() }
+            .padding(horizontal = 14.dp, vertical = 8.dp)
+    )
+}
+
+@Composable
+private fun cardTextFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedTextColor = CcText,
+    unfocusedTextColor = CcText,
+    focusedLabelColor = CcGold,
+    unfocusedLabelColor = CcMuted,
+    cursorColor = CcGold,
+    focusedBorderColor = CcGold,
+    unfocusedBorderColor = CcMuted.copy(alpha = 0.45f)
+)
+
+private fun CardCategory.label() = when (this) {
+    CardCategory.FOCUS -> "Focus"
+    CardCategory.MY_TASKS -> "Mijn taken"
+    CardCategory.WAITING -> "Reactie afwachten"
+    CardCategory.OTHERS -> "Taken van anderen"
+    CardCategory.IDEAS -> "Ideeën"
+    CardCategory.ARCHIVE -> "Archief"
+}
+
+private fun CardPriority.label() = when (this) {
+    CardPriority.LOW -> "Laag"
+    CardPriority.NORMAL -> "Normaal"
+    CardPriority.HIGH -> "Hoog"
+}
+
+private fun CardStatus.label() = when (this) {
+    CardStatus.OPEN -> "Open"
+    CardStatus.COMPLETED -> "Voltooid"
 }
