@@ -1,5 +1,5 @@
 package com.cc.commandcenter.screens
-
+import com.cc.commandcenter.data.QuickNoteRepository
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -44,7 +44,8 @@ fun QuickNoteScreen(
                 // niet nodig voor directe notitie
             },
             onSave = {
-            // volgt later
+                QuickNoteRepository.add(note)
+                onBack()
             }
         )
     }
