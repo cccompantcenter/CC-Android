@@ -117,6 +117,23 @@ fun CardDetailScreen(
             colors = cardTextFieldColors()
         )
 
+        SectionTitle("Aandachtsdatum")
+
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = card.dueDate ?: "",
+            onValueChange = { },
+            singleLine = true,
+            readOnly = true,
+            placeholder = {
+                Text(
+                    text = "dd-MM-jjjj",
+                    color = CcMuted
+                )
+            },
+            colors = cardTextFieldColors()
+        )
+
         SectionTitle("Prioriteit")
 
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
