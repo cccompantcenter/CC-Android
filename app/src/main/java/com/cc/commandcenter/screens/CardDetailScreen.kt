@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -16,9 +17,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.cc.commandcenter.model.Card
 import com.cc.commandcenter.model.CardPriority
 import com.cc.commandcenter.model.CardStatus
+import com.cc.commandcenter.ui.theme.CcText
 
 @Composable
 fun CardDetailScreen(
@@ -37,29 +40,44 @@ fun CardDetailScreen(
             .padding(32.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
+        Text(
+            text = "Card Detail",
+            color = CcText,
+            fontSize = 28.sp
+        )
+
         OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
             value = title,
             onValueChange = { title = it },
             label = { Text("Titel") }
         )
 
         OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
             value = description,
             onValueChange = { description = it },
-            label = { Text("Beschrijving") }
+            label = { Text("Beschrijving") },
+            minLines = 5
         )
 
-        OutlinedTextField(
-            value = priority,
-            onValueChange = { priority = it },
-            label = { Text("Prioriteit") }
-        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            OutlinedTextField(
+                modifier = Modifier.weight(1f),
+                value = priority,
+                onValueChange = { priority = it },
+                label = { Text("Prioriteit") }
+            )
 
-        OutlinedTextField(
-            value = status,
-            onValueChange = { status = it },
-            label = { Text("Status") }
-        )
+            OutlinedTextField(
+                modifier = Modifier.weight(1f),
+                value = status,
+                onValueChange = { status = it },
+                label = { Text("Status") }
+            )
+        }
 
         Row {
             Checkbox(
@@ -68,24 +86,30 @@ fun CardDetailScreen(
             )
 
             Text(
-                text = "Favoriet"
+                text = "Favoriet",
+                color = CcText
             )
         }
 
         Text(
-            text = "Categorie: ${card.category}"
+            text = "Categorie: ${card.category}",
+            color = CcText
         )
 
         Text(
-            text = "Tags: ${card.tags.joinToString()}"
+            text = "Tags: ${card.tags.joinToString()}",
+            color = CcText
         )
 
         Text(
-            text = "Notities"
+            text = "Notities",
+            color = CcText,
+            fontSize = 20.sp
         )
 
         Text(
-            text = if (card.notes.isBlank()) "Nog geen notities." else card.notes
+            text = if (card.notes.isBlank()) "Nog geen notities." else card.notes,
+            color = CcText
         )
 
         Button(
