@@ -77,11 +77,7 @@ fun CcCard(
                 )
             }
 
-            Text(
-                text = statusText,
-                color = if (isCompleted) accentColor else CcMuted,
-                fontSize = 14.sp
-            )
+            CardMetaChip(statusText)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -99,8 +95,15 @@ fun CcCard(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             CardMetaChip("Prioriteit: ${card.priority.label()}")
-            CardMetaChip("Categorie: ${card.category.label()}")
             CardMetaChip(card.createdLabel)
+
+            if (card.favorite) {
+                CardMetaChip("Favoriet")
+            }
+
+            if (card.notes.isNotBlank()) {
+                CardMetaChip("Notitie")
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
