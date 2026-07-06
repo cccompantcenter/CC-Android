@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cc.commandcenter.components.CcCard
 import com.cc.commandcenter.components.CcHeader
+import com.cc.commandcenter.components.CcPrimaryButton
 import com.cc.commandcenter.components.CcSectionHeader
 import com.cc.commandcenter.model.Card
 import com.cc.commandcenter.model.CardCategory
@@ -18,7 +19,8 @@ import java.time.LocalDate
 @Composable
 fun TodayScreen(
     cards: List<Card>,
-    onCardClick: (Card) -> Unit
+    onCardClick: (Card) -> Unit,
+    onAddCard: () -> Unit
 ) {
     val today = LocalDate.now()
 
@@ -34,6 +36,11 @@ fun TodayScreen(
         CcHeader(
             title = "Goedemorgen Chantal",
             subtitle = "Vandaag vraagt aandacht"
+        )
+
+        CcPrimaryButton(
+            text = "+ Nieuwe Card",
+            onClick = onAddCard
         )
 
         if (todayCards.isEmpty()) {

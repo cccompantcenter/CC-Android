@@ -17,9 +17,13 @@ import androidx.compose.ui.unit.dp
 import com.cc.commandcenter.components.Sidebar
 import com.cc.commandcenter.data.CardRepository
 import com.cc.commandcenter.model.Card
+import com.cc.commandcenter.model.CardCategory
+import com.cc.commandcenter.model.CardPriority
+import com.cc.commandcenter.model.CardStatus
 import com.cc.commandcenter.model.Screen
 import com.cc.commandcenter.screens.MainContent
 import com.cc.commandcenter.ui.theme.CcMidnight
+import java.time.LocalDate
 
 @Composable
 fun CCApp() {
@@ -37,6 +41,22 @@ fun CCApp() {
         if (index != -1) {
             cards[index] = updatedCard
         }
+    }
+
+    fun addCard(): Card {
+        val newCard = Card(
+            id = (cards.maxOfOrNull { it.id } ?: 0L) + 1L,
+            title = "Nieuwe Card",
+            description = "",
+            category = CardCategory.MY_TASKS,
+            priority = CardPriority.NORMAL,
+            status = CardStatus.OPEN,
+            createdLabel = "Vandaag",
+            dueDate = LocalDate.now().toString()
+        )
+
+        cards.add(0, newCard)
+        return newCard
     }
 
     Row(
@@ -57,6 +77,9 @@ fun CCApp() {
             cards = cards,
             onSaveCard = { updatedCard ->
                 saveCard(updatedCard)
+            },
+            onAddCard = {
+                addCard()
             }
         )
     }

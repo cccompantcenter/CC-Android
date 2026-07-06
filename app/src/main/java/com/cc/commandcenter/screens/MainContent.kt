@@ -30,7 +30,8 @@ import com.cc.commandcenter.ui.theme.CcText
 fun MainContent(
     screen: Screen,
     cards: List<Card>,
-    onSaveCard: (Card) -> Unit
+    onSaveCard: (Card) -> Unit,
+    onAddCard: () -> Card
 ) {
     var selectedCard by remember { mutableStateOf<Card?>(null) }
 
@@ -76,7 +77,10 @@ fun MainContent(
             when (screen) {
                 Screen.TODAY -> TodayScreen(
                     cards = cards,
-                    onCardClick = { selectedCard = it }
+                    onCardClick = { selectedCard = it },
+                    onAddCard = {
+                        selectedCard = onAddCard()
+                    }
                 )
 
                 Screen.FOCUS -> FocusScreen(
