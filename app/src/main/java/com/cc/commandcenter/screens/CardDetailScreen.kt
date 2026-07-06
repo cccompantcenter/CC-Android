@@ -1,5 +1,6 @@
 package com.cc.commandcenter.screens
 
+import com.cc.commandcenter.util.formatDueDate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -121,7 +122,7 @@ fun CardDetailScreen(
 
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
-            value = card.dueDate ?: "",
+            value = formatDueDate(card.dueDate),
             onValueChange = { },
             singleLine = true,
             readOnly = true,
