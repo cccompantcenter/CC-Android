@@ -1,5 +1,5 @@
 package com.cc.commandcenter.screens
-
+import com.cc.commandcenter.screens.NogOrganiserenScreen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -111,10 +111,7 @@ fun MainContent(
                         onAddCard = { isCreatingCard = true }
                     )
 
-                    Screen.NOG_ORGANISEREN -> CardPlaceholder(
-                        "Nog organiseren",
-                        "Hier komen alle snelle notities binnen."
-                    )
+                    Screen.NOG_ORGANISEREN -> NogOrganiserenScreen()
 
                     Screen.FOCUS -> FocusScreen(
                         cards = cards,
