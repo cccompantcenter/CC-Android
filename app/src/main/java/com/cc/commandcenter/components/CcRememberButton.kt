@@ -1,5 +1,5 @@
 package com.cc.commandcenter.components
-
+import com.cc.commandcenter.components.CcLogo
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -35,9 +35,8 @@ fun CcRememberButton(
             ),
             contentPadding = PaddingValues(0.dp)
         ) {
-            Text(
-                text = "CC",
-                fontSize = 20.sp
+            CcLogo(
+                modifier = Modifier.size(42.dp)
             )
         }
 
