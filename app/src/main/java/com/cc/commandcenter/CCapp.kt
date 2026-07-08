@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.cc.commandcenter.components.CcRememberButton
 import com.cc.commandcenter.components.Sidebar
 import com.cc.commandcenter.data.CardRepository
+import com.cc.commandcenter.data.QuickNoteRepository
 import com.cc.commandcenter.model.Card
 import com.cc.commandcenter.model.CardCategory
 import com.cc.commandcenter.model.CardPriority
@@ -94,12 +95,19 @@ fun CCApp() {
             onBack = {
                 showQuickNoteScreen = false
                 if (quickNoteReturnsToDashboard) {
-                    showStartScreen = false
-                    currentScreen = Screen.TODAY
+                    showStartScreen = true
                 } else {
                     currentScreen = Screen.NOG_ORGANISEREN
                 }
                 quickNoteReturnsToDashboard = false
+            },
+            onSave = { savedNote ->
+                QuickNoteRepository.add(savedNote)
+            },
+            onClear = {
+                if (quickNoteReturnsToDashboard) {
+                    showStartScreen = true
+                }
             }
         )
         return

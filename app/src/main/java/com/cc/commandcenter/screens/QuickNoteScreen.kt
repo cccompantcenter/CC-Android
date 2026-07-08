@@ -36,7 +36,9 @@ import com.cc.commandcenter.ui.theme.CcMidnight
 
 @Composable
 fun QuickNoteScreen(
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onSave: (String) -> Unit = { note -> QuickNoteRepository.add(note) },
+    onClear: () -> Unit = {}
 ) {
     var note by remember { mutableStateOf("") }
 
@@ -60,12 +62,15 @@ fun QuickNoteScreen(
         )
 
         CcActionBar(
-            onBack = onBack,
+            onBack = {
+                onBack()
+            },
             onDelete = {
-                // niet nodig voor directe notitie
+                note = ""
+                onClear()
             },
             onSave = {
-                QuickNoteRepository.add(note)
+                onSave(note)
                 onBack()
             }
         )
