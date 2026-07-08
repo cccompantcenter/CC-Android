@@ -176,6 +176,11 @@ fun CCApp() {
                         dueDate = dueDate
                     )
                 }
+                ,
+                onOpenGedachte = { gedachte ->
+                    selectedGedachte = gedachte
+                    showQuickNoteScreen = true
+                }
             )
         }
 

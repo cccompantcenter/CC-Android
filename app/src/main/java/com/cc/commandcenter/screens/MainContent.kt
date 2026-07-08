@@ -39,7 +39,8 @@ fun MainContent(
         category: CardCategory,
         priority: CardPriority,
         dueDate: String
-    ) -> Card
+    ) -> Card,
+    onOpenGedachte: (com.cc.commandcenter.model.QuickNote) -> Unit = {}
 ) {
     var selectedCard by remember { mutableStateOf<Card?>(null) }
     var isCreatingCard by remember { mutableStateOf(false) }
@@ -111,7 +112,7 @@ fun MainContent(
                         onAddCard = { isCreatingCard = true }
                     )
 
-                    Screen.NOG_ORGANISEREN -> GedachtenScreen()
+                    Screen.NOG_ORGANISEREN -> GedachtenScreen(onOpenGedachte = onOpenGedachte)
 
                     Screen.FOCUS -> FocusScreen(
                         cards = cards,
