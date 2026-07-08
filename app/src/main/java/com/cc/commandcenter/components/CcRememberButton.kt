@@ -49,11 +49,9 @@ fun CcRememberButton(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .offset(x = 6.dp, y = (-6).dp)
                     .size(28.dp)
                     .clip(CircleShape)
                     .background(Color(0xFF1F1A12))
-                    .border(BorderStroke(1.dp, CcGold), CircleShape)
                     .clickable { onBadgeClick?.invoke() },
                 contentAlignment = Alignment.Center
             ) {

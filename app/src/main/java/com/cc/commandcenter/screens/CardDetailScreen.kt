@@ -133,6 +133,24 @@ fun CardDetailScreen(
             fontSize = 18.sp
         )
 
+        if (card.originalGedachteId != null) {
+            SectionTitle("Oorspronkelijke gedachte")
+
+            Text(
+                text = "Gedachte #${card.originalGedachteId}",
+                color = CcText,
+                fontSize = 18.sp
+            )
+
+            if (!card.originalGedachtePreview.isNullOrBlank()) {
+                Text(
+                    text = card.originalGedachtePreview,
+                    color = CcMuted,
+                    fontSize = 16.sp
+                )
+            }
+        }
+
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Checkbox(
                 checked = favorite,

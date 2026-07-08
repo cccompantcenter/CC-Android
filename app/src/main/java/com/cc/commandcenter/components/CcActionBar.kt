@@ -12,7 +12,10 @@ import androidx.compose.ui.unit.dp
 fun CcActionBar(
     onBack: () -> Unit,
     onDelete: () -> Unit,
-    onSave: () -> Unit
+    onSave: () -> Unit,
+    deleteLabel: String = "Verwijderen",
+    extraActionLabel: String? = null,
+    onExtraAction: (() -> Unit)? = null
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -25,10 +28,18 @@ fun CcActionBar(
         )
 
         CcPrimaryButton(
-            text = "Verwijderen",
+            text = deleteLabel,
             onClick = onDelete,
             modifier = Modifier.weight(1f)
         )
+
+        if (!extraActionLabel.isNullOrBlank() && onExtraAction != null) {
+            CcPrimaryButton(
+                text = extraActionLabel,
+                onClick = onExtraAction,
+                modifier = Modifier.weight(1f)
+            )
+        }
 
         CcPrimaryButton(
             text = "Opslaan",

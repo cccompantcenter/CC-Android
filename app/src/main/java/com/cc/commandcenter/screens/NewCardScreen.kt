@@ -21,6 +21,10 @@ import java.time.LocalDate
 
 @Composable
 fun NewCardScreen(
+    initialTitle: String = "",
+    initialCategory: CardCategory = CardCategory.MY_TASKS,
+    initialPriority: CardPriority = CardPriority.NORMAL,
+    initialDueDate: String = LocalDate.now().toString(),
     onCancel: () -> Unit,
     onCreateCard: (
         title: String,
@@ -29,10 +33,10 @@ fun NewCardScreen(
         dueDate: String
     ) -> Unit
 ) {
-    var title by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf(CardCategory.MY_TASKS) }
-    var priority by remember { mutableStateOf(CardPriority.NORMAL) }
-    var dueDate by remember { mutableStateOf(LocalDate.now().toString()) }
+    var title by remember(initialTitle) { mutableStateOf(initialTitle) }
+    var category by remember(initialCategory) { mutableStateOf(initialCategory) }
+    var priority by remember(initialPriority) { mutableStateOf(initialPriority) }
+    var dueDate by remember(initialDueDate) { mutableStateOf(initialDueDate) }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(20.dp)

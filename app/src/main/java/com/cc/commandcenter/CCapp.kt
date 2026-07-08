@@ -24,9 +24,12 @@ import com.cc.commandcenter.model.Card
 import com.cc.commandcenter.model.CardCategory
 import com.cc.commandcenter.model.CardPriority
 import com.cc.commandcenter.model.CardStatus
+import com.cc.commandcenter.model.GedachteProcessingStatus
 import com.cc.commandcenter.model.Screen
 import com.cc.commandcenter.screens.GedachtenScreen
+import com.cc.commandcenter.screens.GedachteProcessingScreen
 import com.cc.commandcenter.screens.MainContent
+import com.cc.commandcenter.screens.NewCardScreen
 import com.cc.commandcenter.screens.QuickNoteScreen
 import com.cc.commandcenter.screens.StartScreen
 import com.cc.commandcenter.ui.theme.CcMidnight
@@ -36,6 +39,8 @@ fun CCApp() {
     var showStartScreen by remember { mutableStateOf(true) }
     var showQuickNoteScreen by remember { mutableStateOf(false) }
     var showGedachtenScreen by remember { mutableStateOf(false) }
+    var showGedachteProcessingScreen by remember { mutableStateOf(false) }
+    var showCardFromGedachteCreation by remember { mutableStateOf(false) }
     var currentScreen by remember { mutableStateOf(Screen.TODAY) }
     var quickNoteReturnsToDashboard by remember { mutableStateOf(false) }
     var selectedGedachte by remember { mutableStateOf<com.cc.commandcenter.model.QuickNote?>(null) }
@@ -58,7 +63,9 @@ fun CCApp() {
         title: String,
         category: CardCategory,
         priority: CardPriority,
-        dueDate: String
+        dueDate: String,
+        originalGedachteId: Long? = null,
+        originalGedachtePreview: String? = null
     ): Card {
         val newCard = Card(
             id = (cards.maxOfOrNull { it.id } ?: 0L) + 1L,
@@ -68,7 +75,9 @@ fun CCApp() {
             priority = priority,
             status = CardStatus.OPEN,
             createdLabel = "Vandaag",
-            dueDate = dueDate
+            dueDate = dueDate,
+            originalGedachteId = originalGedachteId,
+            originalGedachtePreview = originalGedachtePreview
         )
 
         cards.add(0, newCard)
@@ -112,6 +121,7 @@ fun CCApp() {
         QuickNoteScreen(
             initialNote = selectedGedachte?.text ?: "",
             initialInkStrokes = selectedGedachte?.inkStrokes ?: emptyList(),
+            isExisting = selectedGedachte != null,
             onBack = {
                 showQuickNoteScreen = false
                 if (quickNoteReturnsToDashboard) {
@@ -127,6 +137,7 @@ fun CCApp() {
                     QuickNoteRepository.update(
                         id = selectedGedachte!!.id,
                         text = savedNote,
+                        source = selectedGedachte!!.source,
                         inkStrokes = savedStrokes
                     )
                 } else {
@@ -135,15 +146,89 @@ fun CCApp() {
             },
             onDelete = {
                 if (selectedGedachte != null) {
-                    QuickNoteRepository.delete(selectedGedachte!!.id)
+                    QuickNoteRepository.archive(selectedGedachte!!.id)
                 }
             },
             onClear = {
                 if (quickNoteReturnsToDashboard) {
                     showStartScreen = true
                 }
+            },
+            onProcess = if (selectedGedachte != null) {
+                {
+                    showQuickNoteScreen = false
+                    showGedachteProcessingScreen = true
+                }
+            } else {
+                null
             }
         )
+        return
+    }
+
+    if (showGedachteProcessingScreen) {
+        val gedachte = selectedGedachte
+        if (gedachte == null) {
+            showGedachteProcessingScreen = false
+        } else {
+            GedachteProcessingScreen(
+                gedachte = gedachte,
+                onBack = {
+                    showGedachteProcessingScreen = false
+                    showQuickNoteScreen = true
+                },
+                onMaakCard = {
+                    QuickNoteRepository.updateProcessingStatus(gedachte.id, GedachteProcessingStatus.PROCESSING)
+                    showGedachteProcessingScreen = false
+                    showCardFromGedachteCreation = true
+                },
+                onBewaarAlsGedachte = {
+                    QuickNoteRepository.updateProcessingStatus(gedachte.id, GedachteProcessingStatus.NEW)
+                    showGedachteProcessingScreen = false
+                    showCardFromGedachteCreation = false
+                    currentScreen = Screen.NOG_ORGANISEREN
+                    selectedGedachte = null
+                },
+                onArchiveer = {
+                    QuickNoteRepository.archive(gedachte.id)
+                    showGedachteProcessingScreen = false
+                    showCardFromGedachteCreation = false
+                    currentScreen = Screen.NOG_ORGANISEREN
+                    selectedGedachte = null
+                }
+            )
+        }
+        return
+    }
+
+    if (showCardFromGedachteCreation) {
+        val gedachte = selectedGedachte
+        if (gedachte == null) {
+            showCardFromGedachteCreation = false
+        } else {
+            NewCardScreen(
+                initialTitle = gedachte.toCardTitle(),
+                onCancel = {
+                    showCardFromGedachteCreation = false
+                    showGedachteProcessingScreen = true
+                },
+                onCreateCard = { title, category, priority, dueDate ->
+                    createCard(
+                        title = title,
+                        category = category,
+                        priority = priority,
+                        dueDate = dueDate,
+                        originalGedachteId = gedachte.id,
+                        originalGedachtePreview = gedachte.toCardTitle()
+                    )
+                    QuickNoteRepository.markConverted(gedachte.id)
+                    showCardFromGedachteCreation = false
+                    showGedachteProcessingScreen = false
+                    currentScreen = Screen.TODAY
+                    selectedGedachte = null
+                }
+            )
+        }
         return
     }
 
@@ -198,4 +283,11 @@ fun CCApp() {
                 .padding(40.dp)
         )
     }
+}
+
+private fun com.cc.commandcenter.model.QuickNote.toCardTitle(): String {
+    return text.lines()
+        .map { it.trim() }
+        .firstOrNull { it.isNotEmpty() }
+        ?: "Nieuwe Card"
 }

@@ -12,7 +12,9 @@ data class Card(
     val notes: String = "",
     val dueDate: String? = null,
     val tags: List<String> = emptyList(),
-    val favorite: Boolean = false
+    val favorite: Boolean = false,
+    val originalGedachteId: Long? = null,
+    val originalGedachtePreview: String? = null
 )
 
 enum class CardCategory {

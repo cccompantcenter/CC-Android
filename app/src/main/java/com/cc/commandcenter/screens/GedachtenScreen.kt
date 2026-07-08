@@ -4,10 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -110,7 +108,6 @@ private fun GedachteCard(
     onClick: () -> Unit
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
-    var confirmDelete by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -174,31 +171,10 @@ private fun GedachteCard(
                 // placeholder
             })
 
-            DropdownMenuItem(text = { Text("Verwijderen", color = Color(0xFFE8C067)) }, onClick = {
+            DropdownMenuItem(text = { Text("Archiveer", color = Color(0xFFE8C067)) }, onClick = {
                 menuExpanded = false
-                if (thought.text.isBlank() && thought.inkStrokes.isEmpty()) {
-                    QuickNoteRepository.delete(thought.id)
-                } else {
-                    confirmDelete = true
-                }
+                QuickNoteRepository.archive(thought.id)
             })
-        }
-
-        if (confirmDelete) {
-            AlertDialog(
-                onDismissRequest = { confirmDelete = false },
-                title = { Text("Verwijderen") },
-                text = { Text("Weet je zeker dat je deze gedachte permanent wilt verwijderen?") },
-                confirmButton = {
-                    TextButton(onClick = {
-                        confirmDelete = false
-                        QuickNoteRepository.delete(thought.id)
-                    }) { Text("Verwijderen") }
-                },
-                dismissButton = {
-                    TextButton(onClick = { confirmDelete = false }) { Text("Annuleren") }
-                }
-            )
         }
     }
 }

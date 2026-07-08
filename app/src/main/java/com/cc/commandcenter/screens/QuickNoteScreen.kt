@@ -47,7 +47,8 @@ fun QuickNoteScreen(
     onBack: () -> Unit,
     onSave: (String, List<InkStroke>) -> Unit = { note, strokes -> QuickNoteRepository.add(note, inkStrokes = strokes) },
     onDelete: () -> Unit = {},
-    onClear: () -> Unit = {}
+    onClear: () -> Unit = {},
+    onProcess: (() -> Unit)? = null
 ) {
     var note by remember(initialNote) { mutableStateOf(initialNote) }
     val initialStrokes = remember(initialInkStrokes) { initialInkStrokes.toList() }
@@ -143,13 +144,13 @@ fun QuickNoteScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            var showDeleteDialog by remember { mutableStateOf(false) }
+            var showArchiveDialog by remember { mutableStateOf(false) }
 
             CcActionBar(
                 onBack = onBack,
                 onDelete = {
                     if (isExisting) {
-                        showDeleteDialog = true
+                        showArchiveDialog = true
                     } else {
                         note = ""
                         inkCanvas.clearStrokes()
@@ -158,6 +159,9 @@ fun QuickNoteScreen(
                         onBack()
                     }
                 },
+                deleteLabel = if (isExisting) "Archiveer" else "Wissen",
+                extraActionLabel = if (isExisting && onProcess != null) "Verwerk" else null,
+                onExtraAction = if (isExisting) onProcess else null,
                 onSave = {
                     val finalText = note.ifBlank { inkCanvas.convertToText() }
                     val finalStrokes = inkCanvas.strokes()
@@ -176,22 +180,22 @@ fun QuickNoteScreen(
                 }
             )
 
-            if (showDeleteDialog) {
+            if (showArchiveDialog) {
                 androidx.compose.material3.AlertDialog(
-                    onDismissRequest = { showDeleteDialog = false },
-                    title = { androidx.compose.material3.Text(text = "Verwijderen") },
-                    text = { androidx.compose.material3.Text(text = "Weet je zeker dat je deze gedachte permanent wilt verwijderen?") },
+                    onDismissRequest = { showArchiveDialog = false },
+                    title = { androidx.compose.material3.Text(text = "Archiveer gedachte") },
+                    text = { androidx.compose.material3.Text(text = "Deze gedachte blijft bewaard en wordt verplaatst naar het archief.") },
                     confirmButton = {
                         androidx.compose.material3.TextButton(onClick = {
-                            showDeleteDialog = false
+                            showArchiveDialog = false
                             onDelete()
                             onBack()
                         }) {
-                            androidx.compose.material3.Text("Verwijderen")
+                            androidx.compose.material3.Text("Archiveer")
                         }
                     },
                     dismissButton = {
-                        androidx.compose.material3.TextButton(onClick = { showDeleteDialog = false }) {
+                        androidx.compose.material3.TextButton(onClick = { showArchiveDialog = false }) {
                             androidx.compose.material3.Text("Annuleren")
                         }
                     }

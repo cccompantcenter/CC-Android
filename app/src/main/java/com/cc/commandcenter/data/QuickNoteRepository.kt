@@ -2,6 +2,7 @@ package com.cc.commandcenter.data
 
 import androidx.compose.runtime.mutableStateListOf
 import com.cc.commandcenter.ink.InkStroke
+import com.cc.commandcenter.model.GedachteProcessingStatus
 import com.cc.commandcenter.model.QuickNote
 import com.cc.commandcenter.model.QuickNoteSource
 import java.time.LocalTime
@@ -55,6 +56,35 @@ object QuickNoteRepository {
 
     fun delete(id: Long) {
         notes.removeAll { it.id == id }
+    }
+
+    fun noteById(id: Long): QuickNote? = notes.firstOrNull { it.id == id }
+
+    fun updateProcessingStatus(id: Long, status: GedachteProcessingStatus) {
+        val index = notes.indexOfFirst { it.id == id }
+        if (index == -1) return
+
+        val current = notes[index]
+        notes[index] = current.copy(
+            processingStatus = status,
+            updatedAt = LocalTime.now().withSecond(0).withNano(0).toString()
+        )
+    }
+
+    fun archive(id: Long) {
+        val index = notes.indexOfFirst { it.id == id }
+        if (index == -1) return
+
+        val current = notes[index]
+        notes[index] = current.copy(
+            source = QuickNoteSource.NOG_ORGANISEREN,
+            processingStatus = GedachteProcessingStatus.ARCHIVED,
+            updatedAt = LocalTime.now().withSecond(0).withNano(0).toString()
+        )
+    }
+
+    fun markConverted(id: Long) {
+        updateProcessingStatus(id, GedachteProcessingStatus.CONVERTED)
     }
 
     fun inboxNotes(): List<QuickNote> = notes.filter { it.source == QuickNoteSource.GEDACHTEN_INBOX }

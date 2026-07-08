@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.cc.commandcenter.components.CcLogo
 import com.cc.commandcenter.components.CcPrimaryButton
 import com.cc.commandcenter.components.CcRememberButton
+import com.cc.commandcenter.data.QuickNoteRepository
 import kotlinx.coroutines.delay
 
 @Composable
