@@ -66,7 +66,9 @@ fun StartScreen(
         ) {
             CcRememberButton(
                 onClick = onOpenQuickNote,
-                modifier = Modifier.padding(top = 16.dp)
+                modifier = Modifier.padding(top = 16.dp),
+                badgeCount = QuickNoteRepository.inboxNotes().size,
+                onBadgeClick = onOpenGedachten
             )
         }
     }
