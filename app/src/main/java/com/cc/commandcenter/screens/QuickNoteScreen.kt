@@ -2,7 +2,7 @@ package com.cc.commandcenter.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectDragGestures
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -25,6 +25,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerType
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,6 +55,7 @@ fun QuickNoteScreen(
         }
     }
     var currentStroke by remember { mutableStateOf<List<InkPoint>>(emptyList()) }
+    var activePointerType by remember { mutableStateOf(PointerType.Unknown) }
 
     Column(
         modifier = Modifier
@@ -103,12 +106,21 @@ fun QuickNoteScreen(
                                     currentStroke = listOf(InkPoint(startOffset.x, startOffset.y))
                                 },
                                 onDrag = { change, _ ->
+                                    // record pointer type for future use (Stylus vs Finger)
+                                    try {
+                                        activePointerType = change.type
+                                    } catch (_: Throwable) {
+                                    }
+
                                     currentStroke = currentStroke + InkPoint(change.position.x, change.position.y)
                                 },
                                 onDragEnd = {
                                     if (currentStroke.isNotEmpty()) {
                                         inkCanvas.captureStroke(InkStroke(id = System.currentTimeMillis(), points = currentStroke))
                                     }
+                                    currentStroke = emptyList()
+                                },
+                                onDragCancel = {
                                     currentStroke = emptyList()
                                 }
                             )
