@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -65,11 +64,6 @@ fun StartScreen(
                 .padding(bottom = 40.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            CcPrimaryButton(
-                text = "Gedachten",
-                onClick = onOpenGedachten
-            )
-
             CcRememberButton(
                 onClick = onOpenQuickNote,
                 modifier = Modifier.padding(top = 16.dp)
