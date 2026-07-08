@@ -28,6 +28,7 @@ import com.cc.commandcenter.model.GedachteProcessingStatus
 import com.cc.commandcenter.model.Screen
 import com.cc.commandcenter.screens.GedachtenScreen
 import com.cc.commandcenter.screens.GedachteProcessingScreen
+import com.cc.commandcenter.screens.CardDetailScreen
 import com.cc.commandcenter.screens.MainContent
 import com.cc.commandcenter.screens.NewCardScreen
 import com.cc.commandcenter.screens.QuickNoteScreen
@@ -40,7 +41,7 @@ fun CCApp() {
     var showQuickNoteScreen by remember { mutableStateOf(false) }
     var showGedachtenScreen by remember { mutableStateOf(false) }
     var showGedachteProcessingScreen by remember { mutableStateOf(false) }
-    var showCardFromGedachteCreation by remember { mutableStateOf(false) }
+    var workflowCardId by remember { mutableStateOf<Long?>(null) }
     var currentScreen by remember { mutableStateOf(Screen.TODAY) }
     var quickNoteReturnsToDashboard by remember { mutableStateOf(false) }
     var selectedGedachte by remember { mutableStateOf<com.cc.commandcenter.model.QuickNote?>(null) }
@@ -178,20 +179,24 @@ fun CCApp() {
                 },
                 onMaakCard = {
                     QuickNoteRepository.updateProcessingStatus(gedachte.id, GedachteProcessingStatus.PROCESSING)
+                    val workflowCard = CardRepository.createCardFromGedachte(
+                        gedachteId = gedachte.id,
+                        gedachteTitle = gedachte.toCardTitle(),
+                        gedachtePreview = gedachte.toCardTitle()
+                    )
+                    QuickNoteRepository.markConverted(gedachte.id)
                     showGedachteProcessingScreen = false
-                    showCardFromGedachteCreation = true
+                    workflowCardId = workflowCard.id
                 },
                 onBewaarAlsGedachte = {
                     QuickNoteRepository.updateProcessingStatus(gedachte.id, GedachteProcessingStatus.NEW)
                     showGedachteProcessingScreen = false
-                    showCardFromGedachteCreation = false
                     currentScreen = Screen.NOG_ORGANISEREN
                     selectedGedachte = null
                 },
                 onArchiveer = {
                     QuickNoteRepository.archive(gedachte.id)
                     showGedachteProcessingScreen = false
-                    showCardFromGedachteCreation = false
                     currentScreen = Screen.NOG_ORGANISEREN
                     selectedGedachte = null
                 }
@@ -200,29 +205,28 @@ fun CCApp() {
         return
     }
 
-    if (showCardFromGedachteCreation) {
-        val gedachte = selectedGedachte
-        if (gedachte == null) {
-            showCardFromGedachteCreation = false
+    if (workflowCardId != null) {
+        val workflowCard = CardRepository.getCardById(workflowCardId!!)
+        if (workflowCard == null) {
+            workflowCardId = null
         } else {
-            NewCardScreen(
-                initialTitle = gedachte.toCardTitle(),
-                onCancel = {
-                    showCardFromGedachteCreation = false
+            CardDetailScreen(
+                card = workflowCard,
+                onBack = {
+                    workflowCardId = null
                     showGedachteProcessingScreen = true
                 },
-                onCreateCard = { title, category, priority, dueDate ->
-                    createCard(
-                        title = title,
-                        category = category,
-                        priority = priority,
-                        dueDate = dueDate,
-                        originalGedachteId = gedachte.id,
-                        originalGedachtePreview = gedachte.toCardTitle()
-                    )
-                    QuickNoteRepository.markConverted(gedachte.id)
-                    showCardFromGedachteCreation = false
-                    showGedachteProcessingScreen = false
+                onDelete = {
+                    deleteCard(workflowCard)
+                    selectedGedachte?.let {
+                        QuickNoteRepository.updateProcessingStatus(it.id, GedachteProcessingStatus.NEW)
+                    }
+                    workflowCardId = null
+                    showGedachteProcessingScreen = true
+                },
+                onSave = { updatedCard ->
+                    saveCard(updatedCard)
+                    workflowCardId = null
                     currentScreen = Screen.TODAY
                     selectedGedachte = null
                 }

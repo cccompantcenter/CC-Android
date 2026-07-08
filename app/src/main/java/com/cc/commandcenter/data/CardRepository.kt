@@ -109,11 +109,16 @@ object CardRepository {
     fun getCardById(cardId: Long): Card? =
         cards.firstOrNull { it.id == cardId }
 
+    fun getCardBySourceGedachteId(sourceGedachteId: Long): Card? =
+        cards.firstOrNull {
+            it.sourceGedachteId == sourceGedachteId || it.originalGedachteId == sourceGedachteId
+        }
+
     fun createCard(
         title: String,
         category: CardCategory,
         priority: CardPriority,
-        dueDate: String,
+        dueDate: String?,
         originalGedachteId: Long? = null,
         originalGedachtePreview: String? = null
     ): Card {
@@ -132,6 +137,27 @@ object CardRepository {
 
         cards.add(0, newCard)
         return newCard
+    }
+
+    fun createCardFromGedachte(
+        gedachteId: Long,
+        gedachteTitle: String,
+        gedachtePreview: String,
+        dueDate: String? = null
+    ): Card {
+        val existingCard = getCardBySourceGedachteId(gedachteId)
+        if (existingCard != null) {
+            return existingCard
+        }
+
+        return createCard(
+            title = gedachteTitle,
+            category = CardCategory.IDEAS,
+            priority = CardPriority.NORMAL,
+            dueDate = dueDate,
+            originalGedachteId = gedachteId,
+            originalGedachtePreview = gedachtePreview
+        )
     }
 
     fun updateCard(updatedCard: Card): Card {

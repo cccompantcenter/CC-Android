@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.cc.commandcenter.components.CcPrimaryButton
 import com.cc.commandcenter.data.CardRepository
 import com.cc.commandcenter.model.Card
+import com.cc.commandcenter.model.CardCategory
 import com.cc.commandcenter.model.CardDestination
 import com.cc.commandcenter.model.CardPriority
 import com.cc.commandcenter.model.CardStatus
@@ -250,6 +251,7 @@ fun UniversalCardEditor(
                 val updatedCard = card.copy(
                     title = title,
                     description = description,
+                    category = destination.toCardCategory(card.category),
                     priority = priority,
                     status = status,
                     favorite = favorite,
@@ -357,6 +359,20 @@ private val userFacingDestinations = listOf(
     CardDestination.IDEAS,
     CardDestination.ARCHIVE
 )
+
+private fun CardDestination.toCardCategory(currentCategory: CardCategory): CardCategory = when (this) {
+    CardDestination.FOCUS -> CardCategory.FOCUS
+    CardDestination.MY_TASKS -> CardCategory.MY_TASKS
+    CardDestination.WAITING -> CardCategory.WAITING
+    CardDestination.OTHERS -> CardCategory.OTHERS
+    CardDestination.IDEAS -> CardCategory.IDEAS
+    CardDestination.ARCHIVE -> CardCategory.ARCHIVE
+    CardDestination.TODAY -> CardCategory.FOCUS
+    CardDestination.PROJECT,
+    CardDestination.CALENDAR,
+    CardDestination.CONTACT,
+    CardDestination.INBOX -> currentCategory
+}
 
 private fun String.toTagList(): List<String> = split(",")
     .map { it.trim() }
