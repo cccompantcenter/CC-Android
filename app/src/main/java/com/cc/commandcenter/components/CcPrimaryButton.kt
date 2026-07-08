@@ -14,12 +14,12 @@ import com.cc.commandcenter.ui.theme.CcMidnight
 @Composable
 fun CcPrimaryButton(
     text: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Button(
         onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = modifier
             .height(56.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = CcGold,

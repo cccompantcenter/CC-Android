@@ -3,7 +3,7 @@ package com.cc.commandcenter.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,7 +24,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -76,7 +75,7 @@ fun QuickNoteScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
@@ -88,34 +87,37 @@ fun QuickNoteScreen(
                         shape = RoundedCornerShape(28.dp)
                     )
                     .padding(24.dp)
-                    .pointerInput(Unit) {
-                        detectDragGestures(
-                            onDragStart = { startOffset ->
-                                currentStroke = listOf(InkPoint(startOffset.x, startOffset.y))
-                            },
-                            onDrag = { change, _ ->
-                                currentStroke = currentStroke + InkPoint(change.position.x, change.position.y)
-                            },
-                            onDragEnd = {
-                                if (currentStroke.isNotEmpty()) {
-                                    inkCanvas.captureStroke(InkStroke(id = System.currentTimeMillis(), points = currentStroke))
-                                }
-                                currentStroke = emptyList()
-                            }
-                        )
-                    }
             ) {
-                if (note.isBlank() && inkCanvas.strokes().isEmpty()) {
+                androidx.compose.foundation.Canvas(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(Unit) {
+                            detectDragGestures(
+                                onDragStart = { startOffset ->
+                                    currentStroke = listOf(InkPoint(startOffset.x, startOffset.y))
+                                },
+                                onDrag = { change, _ ->
+                                    currentStroke = currentStroke + InkPoint(change.position.x, change.position.y)
+                                },
+                                onDragEnd = {
+                                    if (currentStroke.isNotEmpty()) {
+                                        inkCanvas.captureStroke(InkStroke(id = System.currentTimeMillis(), points = currentStroke))
+                                    }
+                                    currentStroke = emptyList()
+                                }
+                            )
+                        }
+                ) {
+                    drawInkStrokes(inkCanvas.strokes(), currentStroke)
+                }
+
+                if (note.isBlank() && inkCanvas.strokes().isEmpty() && currentStroke.isEmpty()) {
                     Text(
                         text = "Plaats je handschrift of typ een eerste notitie…",
                         color = CcMuted,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Light
                     )
-                } else {
-                    androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
-                        drawInkStrokes(inkCanvas.strokes(), currentStroke)
-                    }
                 }
             }
 
