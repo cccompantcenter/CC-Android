@@ -34,6 +34,7 @@ fun CCApp() {
     var showStartScreen by remember { mutableStateOf(true) }
     var showQuickNoteScreen by remember { mutableStateOf(false) }
     var currentScreen by remember { mutableStateOf(Screen.TODAY) }
+    var quickNoteReturnsToDashboard by remember { mutableStateOf(false) }
 
     val cards = remember {
         mutableStateListOf(
@@ -78,6 +79,11 @@ fun CCApp() {
         StartScreen(
             onOpenDashboard = {
                 showStartScreen = false
+            },
+            onOpenQuickNote = {
+                quickNoteReturnsToDashboard = true
+                showQuickNoteScreen = true
+                showStartScreen = false
             }
         )
         return
@@ -87,7 +93,13 @@ fun CCApp() {
         QuickNoteScreen(
             onBack = {
                 showQuickNoteScreen = false
-                currentScreen = Screen.NOG_ORGANISEREN
+                if (quickNoteReturnsToDashboard) {
+                    showStartScreen = false
+                    currentScreen = Screen.TODAY
+                } else {
+                    currentScreen = Screen.NOG_ORGANISEREN
+                }
+                quickNoteReturnsToDashboard = false
             }
         )
         return
