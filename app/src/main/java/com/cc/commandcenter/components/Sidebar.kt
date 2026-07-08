@@ -36,8 +36,8 @@ fun Sidebar(
             .padding(24.dp)
     ) {
         Image(
-            painter = painterResource(id = R.drawable.cc_logo_reference),
-            contentDescription = "CC logo",
+            painter = painterResource(id = R.drawable.cc_signature),
+            contentDescription = "Nieuwe gedachte",
             modifier = Modifier
                 .height(72.dp)
                 .fillMaxWidth()

@@ -36,6 +36,11 @@ object QuickNoteRepository {
         source: QuickNoteSource = QuickNoteSource.GEDACHTEN_INBOX,
         inkStrokes: List<InkStroke> = emptyList()
     ) {
+        if (text.isBlank() && inkStrokes.isEmpty()) {
+            delete(id)
+            return
+        }
+
         val index = notes.indexOfFirst { it.id == id }
         if (index == -1) return
 
@@ -46,6 +51,10 @@ object QuickNoteRepository {
             source = source,
             inkStrokes = inkStrokes
         )
+    }
+
+    fun delete(id: Long) {
+        notes.removeAll { it.id == id }
     }
 
     fun inboxNotes(): List<QuickNote> = notes.filter { it.source == QuickNoteSource.GEDACHTEN_INBOX }

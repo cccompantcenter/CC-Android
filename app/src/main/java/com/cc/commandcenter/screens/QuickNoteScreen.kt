@@ -43,8 +43,10 @@ import com.cc.commandcenter.ui.theme.CcText
 fun QuickNoteScreen(
     initialNote: String = "",
     initialInkStrokes: List<InkStroke> = emptyList(),
+    isExisting: Boolean = false,
     onBack: () -> Unit,
     onSave: (String, List<InkStroke>) -> Unit = { note, strokes -> QuickNoteRepository.add(note, inkStrokes = strokes) },
+    onDelete: () -> Unit = {},
     onClear: () -> Unit = {}
 ) {
     var note by remember(initialNote) { mutableStateOf(initialNote) }
@@ -141,19 +143,60 @@ fun QuickNoteScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            var showDeleteDialog by remember { mutableStateOf(false) }
+
             CcActionBar(
                 onBack = onBack,
                 onDelete = {
-                    note = ""
-                    inkCanvas.clearStrokes()
-                    currentStroke = emptyList()
-                    onClear()
+                    if (isExisting) {
+                        showDeleteDialog = true
+                    } else {
+                        note = ""
+                        inkCanvas.clearStrokes()
+                        currentStroke = emptyList()
+                        onClear()
+                        onBack()
+                    }
                 },
                 onSave = {
-                    onSave(note.ifBlank { inkCanvas.convertToText() }, inkCanvas.strokes())
-                    onBack()
+                    val finalText = note.ifBlank { inkCanvas.convertToText() }
+                    val finalStrokes = inkCanvas.strokes()
+
+                    if (finalText.isBlank() && finalStrokes.isEmpty()) {
+                        if (isExisting) {
+                            onDelete()
+                        } else {
+                            onClear()
+                        }
+                        onBack()
+                    } else {
+                        onSave(finalText, finalStrokes)
+                        onBack()
+                    }
                 }
             )
+
+            if (showDeleteDialog) {
+                androidx.compose.material3.AlertDialog(
+                    onDismissRequest = { showDeleteDialog = false },
+                    title = { androidx.compose.material3.Text(text = "Verwijderen") },
+                    text = { androidx.compose.material3.Text(text = "Weet je zeker dat je deze gedachte permanent wilt verwijderen?") },
+                    confirmButton = {
+                        androidx.compose.material3.TextButton(onClick = {
+                            showDeleteDialog = false
+                            onDelete()
+                            onBack()
+                        }) {
+                            androidx.compose.material3.Text("Verwijderen")
+                        }
+                    },
+                    dismissButton = {
+                        androidx.compose.material3.TextButton(onClick = { showDeleteDialog = false }) {
+                            androidx.compose.material3.Text("Annuleren")
+                        }
+                    }
+                )
+            }
         }
     }
 }

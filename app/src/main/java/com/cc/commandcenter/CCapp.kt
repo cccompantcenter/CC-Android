@@ -133,6 +133,11 @@ fun CCApp() {
                     QuickNoteRepository.add(savedNote, inkStrokes = savedStrokes)
                 }
             },
+            onDelete = {
+                if (selectedGedachte != null) {
+                    QuickNoteRepository.delete(selectedGedachte!!.id)
+                }
+            },
             onClear = {
                 if (quickNoteReturnsToDashboard) {
                     showStartScreen = true
