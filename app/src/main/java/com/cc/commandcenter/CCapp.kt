@@ -47,16 +47,18 @@ fun CCApp() {
 
     val cards = remember {
         mutableStateListOf(
-            *CardRepository.allCards().toTypedArray()
+            *CardRepository.getAllCards().toTypedArray()
         )
     }
 
-    fun saveCard(updatedCard: Card) {
-        val index = cards.indexOfFirst { it.id == updatedCard.id }
+    fun refreshCards() {
+        cards.clear()
+        cards.addAll(CardRepository.getAllCards())
+    }
 
-        if (index != -1) {
-            cards[index] = updatedCard
-        }
+    fun saveCard(updatedCard: Card) {
+        CardRepository.updateCard(updatedCard)
+        refreshCards()
     }
 
     fun createCard(
@@ -67,25 +69,22 @@ fun CCApp() {
         originalGedachteId: Long? = null,
         originalGedachtePreview: String? = null
     ): Card {
-        val newCard = Card(
-            id = (cards.maxOfOrNull { it.id } ?: 0L) + 1L,
+        val newCard = CardRepository.createCard(
             title = title,
-            description = "",
             category = category,
             priority = priority,
-            status = CardStatus.OPEN,
-            createdLabel = "Vandaag",
             dueDate = dueDate,
             originalGedachteId = originalGedachteId,
             originalGedachtePreview = originalGedachtePreview
         )
 
-        cards.add(0, newCard)
+        refreshCards()
         return newCard
     }
 
     fun deleteCard(card: Card) {
-        cards.removeAll { it.id == card.id }
+        CardRepository.deleteCard(card.id)
+        refreshCards()
     }
 
     if (showStartScreen) {

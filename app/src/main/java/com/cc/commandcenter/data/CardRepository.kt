@@ -2,12 +2,14 @@ package com.cc.commandcenter.data
 
 import com.cc.commandcenter.model.Card
 import com.cc.commandcenter.model.CardCategory
+import com.cc.commandcenter.model.CardDestination
 import com.cc.commandcenter.model.CardPriority
 import com.cc.commandcenter.model.CardStatus
 
 object CardRepository {
 
-    private val cards = listOf(
+    // In-memory repository boundary for future persistence replacement.
+    private val cards = mutableListOf(
 
         // ---------- VERLOPEN ----------
 
@@ -100,7 +102,75 @@ object CardRepository {
         )
     )
 
-    fun allCards(): List<Card> = cards
+    fun getAllCards(): List<Card> = cards.toList()
+
+    fun allCards(): List<Card> = getAllCards()
+
+    fun getCardById(cardId: Long): Card? =
+        cards.firstOrNull { it.id == cardId }
+
+    fun createCard(
+        title: String,
+        category: CardCategory,
+        priority: CardPriority,
+        dueDate: String,
+        originalGedachteId: Long? = null,
+        originalGedachtePreview: String? = null
+    ): Card {
+        val newCard = Card(
+            id = (cards.maxOfOrNull { it.id } ?: 0L) + 1L,
+            title = title,
+            description = "",
+            category = category,
+            priority = priority,
+            status = CardStatus.OPEN,
+            createdLabel = "Vandaag",
+            dueDate = dueDate,
+            originalGedachteId = originalGedachteId,
+            originalGedachtePreview = originalGedachtePreview
+        )
+
+        cards.add(0, newCard)
+        return newCard
+    }
+
+    fun updateCard(updatedCard: Card): Card {
+        val index = cards.indexOfFirst { it.id == updatedCard.id }
+        if (index != -1) {
+            cards[index] = updatedCard
+        }
+        return updatedCard
+    }
+
+    fun archiveCard(cardId: Long): Card? {
+        val card = getCardById(cardId) ?: return null
+        val archivedCard = card.copy(
+            category = CardCategory.ARCHIVE,
+            status = CardStatus.COMPLETED,
+            destination = CardDestination.ARCHIVE
+        )
+        updateCard(archivedCard)
+        return archivedCard
+    }
+
+    fun deleteCard(cardId: Long): Boolean =
+        cards.removeAll { it.id == cardId }
+
+    fun linkCards(cardId: Long, linkedCardId: Long): Card? {
+        val card = getCardById(cardId) ?: return null
+        if (cardId == linkedCardId) return card
+
+        val linkedIds = (card.linkedCardIds + linkedCardId).distinct()
+        val linkedCard = card.copy(linkedCardIds = linkedIds)
+        updateCard(linkedCard)
+        return linkedCard
+    }
+
+    fun cardsByDestination(destination: CardDestination): List<Card> =
+        cards.filter { it.destination == destination }
+
+    fun cardsByStatus(status: CardStatus): List<Card> =
+        cards.filter { it.status == status }
 
     fun focusCards(): List<Card> =
         cards.filter { it.category == CardCategory.FOCUS }
