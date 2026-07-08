@@ -31,7 +31,7 @@ data class InkPoint(
 )
 
 /**
- * Minimal in-memory implementation used as a placeholder until a real handwriting layer exists.
+ * Minimal in-memory implementation used as a visible drawing surface until a real handwriting layer exists.
  */
 class DefaultCCInkCanvas : CCInkCanvas {
     private val storedStrokes = mutableListOf<InkStroke>()
