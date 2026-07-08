@@ -40,12 +40,18 @@ import com.cc.commandcenter.ui.theme.CcText
 @Composable
 fun QuickNoteScreen(
     initialNote: String = "",
+    initialInkStrokes: List<InkStroke> = emptyList(),
     onBack: () -> Unit,
-    onSave: (String) -> Unit = { note -> QuickNoteRepository.add(note) },
+    onSave: (String, List<InkStroke>) -> Unit = { note, strokes -> QuickNoteRepository.add(note, inkStrokes = strokes) },
     onClear: () -> Unit = {}
 ) {
     var note by remember(initialNote) { mutableStateOf(initialNote) }
-    val inkCanvas = remember { DefaultCCInkCanvas() }
+    val initialStrokes = remember(initialInkStrokes) { initialInkStrokes.toList() }
+    val inkCanvas = remember(initialStrokes) {
+        DefaultCCInkCanvas().also { canvas ->
+            initialStrokes.forEach { stroke -> canvas.captureStroke(stroke) }
+        }
+    }
     var currentStroke by remember { mutableStateOf<List<InkPoint>>(emptyList()) }
 
     Column(
@@ -132,7 +138,7 @@ fun QuickNoteScreen(
                     onClear()
                 },
                 onSave = {
-                    onSave(note.ifBlank { inkCanvas.convertToText() })
+                    onSave(note.ifBlank { inkCanvas.convertToText() }, inkCanvas.strokes())
                     onBack()
                 }
             )

@@ -1,5 +1,7 @@
 package com.cc.commandcenter.model
 
+import com.cc.commandcenter.ink.InkStroke
+
 data class QuickNote(
     val id: Long,
     val text: String,
@@ -11,7 +13,8 @@ data class QuickNote(
     val sourceContext: GedachteSource = GedachteSource.UNKNOWN,
     val originalInput: String? = null,
     val aiInterpretation: String? = null,
-    val aiConfidence: Double? = null
+    val aiConfidence: Double? = null,
+    val inkStrokes: List<InkStroke> = emptyList()
 )
 
 enum class QuickNoteSource {

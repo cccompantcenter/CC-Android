@@ -111,6 +111,7 @@ fun CCApp() {
     if (showQuickNoteScreen) {
         QuickNoteScreen(
             initialNote = selectedGedachte?.text ?: "",
+            initialInkStrokes = selectedGedachte?.inkStrokes ?: emptyList(),
             onBack = {
                 showQuickNoteScreen = false
                 if (quickNoteReturnsToDashboard) {
@@ -121,8 +122,16 @@ fun CCApp() {
                 quickNoteReturnsToDashboard = false
                 selectedGedachte = null
             },
-            onSave = { savedNote ->
-                QuickNoteRepository.add(savedNote)
+            onSave = { savedNote, savedStrokes ->
+                if (selectedGedachte != null) {
+                    QuickNoteRepository.update(
+                        id = selectedGedachte!!.id,
+                        text = savedNote,
+                        inkStrokes = savedStrokes
+                    )
+                } else {
+                    QuickNoteRepository.add(savedNote, inkStrokes = savedStrokes)
+                }
             },
             onClear = {
                 if (quickNoteReturnsToDashboard) {
