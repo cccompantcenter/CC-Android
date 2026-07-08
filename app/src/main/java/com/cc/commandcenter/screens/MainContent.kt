@@ -111,7 +111,7 @@ fun MainContent(
                         onAddCard = { isCreatingCard = true }
                     )
 
-                    Screen.NOG_ORGANISEREN -> NogOrganiserenScreen()
+                    Screen.NOG_ORGANISEREN -> GedachtenScreen()
 
                     Screen.FOCUS -> FocusScreen(
                         cards = cards,
