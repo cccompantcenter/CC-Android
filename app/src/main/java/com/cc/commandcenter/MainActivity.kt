@@ -2,11 +2,13 @@ package com.cc.commandcenter
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import com.cc.commandcenter.data.CardRepository
 import com.cc.commandcenter.model.Screen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        CardRepository.init(applicationContext)
         setContent {
             CCApp()
         }

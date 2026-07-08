@@ -5,6 +5,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -77,7 +79,9 @@ fun UniversalCardEditor(
     var priority by remember(card.id) { mutableStateOf(card.priority) }
     var status by remember(card.id) { mutableStateOf(card.status) }
     var favorite by remember(card.id) { mutableStateOf(card.favorite) }
-    var destination by remember(card.id) { mutableStateOf(card.destination) }
+    var destination by remember(card.id) {
+        mutableStateOf(card.destination.toUserFacingDestination(card.category))
+    }
     var tagsText by remember(card.id) { mutableStateOf(card.tags.joinToString(", ")) }
 
     Column(
@@ -168,9 +172,15 @@ fun UniversalCardEditor(
             colors = cardTextFieldColors()
         )
 
+        Text(
+            text = "Gebruik korte tags, gescheiden door komma's. Handschrift blijft het vertrekpunt; tags zijn alleen structuur.",
+            color = CcMuted,
+            fontSize = 14.sp
+        )
+
         SectionTitle("Bestemming in workflow")
 
-        ChoiceRow {
+        ChoiceGroup {
             userFacingDestinations.forEach { item ->
                 ChoiceChip(item.label(), destination == item) {
                     destination = item
@@ -226,7 +236,7 @@ fun UniversalCardEditor(
 
         SectionTitle("Prioriteit")
 
-        ChoiceRow {
+        ChoiceGroup {
             ChoiceChip("Laag", priority == CardPriority.LOW) { priority = CardPriority.LOW }
             ChoiceChip("Normaal", priority == CardPriority.NORMAL) { priority = CardPriority.NORMAL }
             ChoiceChip("Hoog", priority == CardPriority.HIGH) { priority = CardPriority.HIGH }
@@ -234,7 +244,7 @@ fun UniversalCardEditor(
 
         SectionTitle("Status")
 
-        ChoiceRow {
+        ChoiceGroup {
             ChoiceChip("Open", status == CardStatus.OPEN) { status = CardStatus.OPEN }
             ChoiceChip("Voltooid", status == CardStatus.COMPLETED) { status = CardStatus.COMPLETED }
         }
@@ -275,9 +285,13 @@ private fun SectionTitle(text: String) {
     )
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ChoiceRow(content: @Composable () -> Unit) {
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+private fun ChoiceGroup(content: @Composable () -> Unit) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
         content()
     }
 }
@@ -359,6 +373,27 @@ private val userFacingDestinations = listOf(
     CardDestination.IDEAS,
     CardDestination.ARCHIVE
 )
+
+private fun CardDestination.toUserFacingDestination(category: CardCategory): CardDestination = when (this) {
+    CardDestination.FOCUS,
+    CardDestination.MY_TASKS,
+    CardDestination.WAITING,
+    CardDestination.OTHERS,
+    CardDestination.IDEAS,
+    CardDestination.ARCHIVE -> this
+    CardDestination.TODAY,
+    CardDestination.PROJECT,
+    CardDestination.CALENDAR,
+    CardDestination.CONTACT,
+    CardDestination.INBOX -> when (category) {
+        CardCategory.FOCUS -> CardDestination.FOCUS
+        CardCategory.MY_TASKS -> CardDestination.MY_TASKS
+        CardCategory.WAITING -> CardDestination.WAITING
+        CardCategory.OTHERS -> CardDestination.OTHERS
+        CardCategory.IDEAS -> CardDestination.IDEAS
+        CardCategory.ARCHIVE -> CardDestination.ARCHIVE
+    }
+}
 
 private fun CardDestination.toCardCategory(currentCategory: CardCategory): CardCategory = when (this) {
     CardDestination.FOCUS -> CardCategory.FOCUS
