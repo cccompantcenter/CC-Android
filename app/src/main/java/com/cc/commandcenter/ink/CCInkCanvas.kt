@@ -1,5 +1,7 @@
 package com.cc.commandcenter.ink
 
+import androidx.compose.runtime.mutableStateListOf
+
 /**
  * Reusable abstraction for future S Pen handwriting support.
  *
@@ -32,9 +34,10 @@ data class InkPoint(
 
 /**
  * Minimal in-memory implementation used as a visible drawing surface until a real handwriting layer exists.
+ * Uses a Compose `SnapshotStateList` so mutations properly trigger recomposition/redraws in Compose.
  */
 class DefaultCCInkCanvas : CCInkCanvas {
-    private val storedStrokes = mutableListOf<InkStroke>()
+    private val storedStrokes = mutableStateListOf<InkStroke>()
 
     override fun captureStroke(stroke: InkStroke) {
         storedStrokes.add(stroke)
@@ -44,7 +47,8 @@ class DefaultCCInkCanvas : CCInkCanvas {
         storedStrokes.clear()
     }
 
-    override fun strokes(): List<InkStroke> = storedStrokes.toList()
+    // Return the observable list itself so Compose can observe changes.
+    override fun strokes(): List<InkStroke> = storedStrokes
 
     override fun recognizedText(): String = ""
 
