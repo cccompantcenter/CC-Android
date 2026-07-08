@@ -60,12 +60,18 @@ enum class CardType {
 }
 
 enum class CardDestination {
+    FOCUS,
+    MY_TASKS,
+    WAITING,
+    OTHERS,
+    IDEAS,
+    ARCHIVE,
+
+    // Legacy values kept for backward compatibility during the transition.
     TODAY,
     PROJECT,
     CALENDAR,
     CONTACT,
-    WAITING,
-    ARCHIVE,
     INBOX
 }
 
@@ -79,10 +85,10 @@ private fun CardCategory.toCardType(): CardType = when (this) {
 }
 
 private fun CardCategory.toCardDestination(): CardDestination = when (this) {
-    CardCategory.FOCUS,
-    CardCategory.MY_TASKS,
-    CardCategory.OTHERS -> CardDestination.TODAY
+    CardCategory.FOCUS -> CardDestination.FOCUS
+    CardCategory.MY_TASKS -> CardDestination.MY_TASKS
     CardCategory.WAITING -> CardDestination.WAITING
-    CardCategory.IDEAS -> CardDestination.INBOX
+    CardCategory.OTHERS -> CardDestination.OTHERS
+    CardCategory.IDEAS -> CardDestination.IDEAS
     CardCategory.ARCHIVE -> CardDestination.ARCHIVE
 }
