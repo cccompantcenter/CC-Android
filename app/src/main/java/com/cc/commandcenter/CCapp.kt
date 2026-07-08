@@ -38,6 +38,7 @@ fun CCApp() {
     var showGedachtenScreen by remember { mutableStateOf(false) }
     var currentScreen by remember { mutableStateOf(Screen.TODAY) }
     var quickNoteReturnsToDashboard by remember { mutableStateOf(false) }
+    var selectedGedachte by remember { mutableStateOf<com.cc.commandcenter.model.QuickNote?>(null) }
 
     val cards = remember {
         mutableStateListOf(
@@ -97,12 +98,19 @@ fun CCApp() {
     }
 
     if (showGedachtenScreen) {
-        GedachtenScreen()
+        GedachtenScreen(
+            onOpenGedachte = { gedachte ->
+                selectedGedachte = gedachte
+                showQuickNoteScreen = true
+                showGedachtenScreen = false
+            }
+        )
         return
     }
 
     if (showQuickNoteScreen) {
         QuickNoteScreen(
+            initialNote = selectedGedachte?.text ?: "",
             onBack = {
                 showQuickNoteScreen = false
                 if (quickNoteReturnsToDashboard) {
@@ -111,6 +119,7 @@ fun CCApp() {
                     currentScreen = Screen.NOG_ORGANISEREN
                 }
                 quickNoteReturnsToDashboard = false
+                selectedGedachte = null
             },
             onSave = { savedNote ->
                 QuickNoteRepository.add(savedNote)

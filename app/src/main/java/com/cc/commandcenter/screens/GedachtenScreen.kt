@@ -2,6 +2,7 @@ package com.cc.commandcenter.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -29,7 +30,9 @@ import com.cc.commandcenter.ui.theme.CcMuted
 import com.cc.commandcenter.ui.theme.CcText
 
 @Composable
-fun GedachtenScreen() {
+fun GedachtenScreen(
+    onOpenGedachte: (com.cc.commandcenter.model.QuickNote) -> Unit = {}
+) {
     val thoughts = QuickNoteRepository.inboxNotes()
         .sortedByDescending { it.id }
 
@@ -47,7 +50,10 @@ fun GedachtenScreen() {
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(thoughts) { thought ->
-                    GedachteCard(thought = thought)
+                    GedachteCard(
+                        thought = thought,
+                        onClick = { onOpenGedachte(thought) }
+                    )
                 }
             }
         }
@@ -82,11 +88,15 @@ private fun EmptyGedachtenState() {
 }
 
 @Composable
-private fun GedachteCard(thought: com.cc.commandcenter.model.QuickNote) {
+private fun GedachteCard(
+    thought: com.cc.commandcenter.model.QuickNote,
+    onClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
+            .clickable(onClick = onClick)
             .background(Color(0xFF211E18))
             .border(
                 width = 1.dp,

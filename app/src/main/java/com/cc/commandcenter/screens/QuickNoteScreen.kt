@@ -36,11 +36,12 @@ import com.cc.commandcenter.ui.theme.CcMidnight
 
 @Composable
 fun QuickNoteScreen(
+    initialNote: String = "",
     onBack: () -> Unit,
     onSave: (String) -> Unit = { note -> QuickNoteRepository.add(note) },
     onClear: () -> Unit = {}
 ) {
-    var note by remember { mutableStateOf("") }
+    var note by remember(initialNote) { mutableStateOf(initialNote) }
 
     Column(
         modifier = Modifier
