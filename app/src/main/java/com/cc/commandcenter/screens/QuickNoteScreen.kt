@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cc.commandcenter.components.CcActionBar
 import com.cc.commandcenter.data.QuickNoteRepository
+import com.cc.commandcenter.ink.DefaultCCInkCanvas
 import com.cc.commandcenter.ui.theme.CcMidnight
 import com.cc.commandcenter.ui.theme.CcMuted
 import com.cc.commandcenter.ui.theme.CcText
@@ -38,6 +39,7 @@ fun QuickNoteScreen(
     onClear: () -> Unit = {}
 ) {
     var note by remember(initialNote) { mutableStateOf(initialNote) }
+    val inkCanvas = remember { DefaultCCInkCanvas() }
 
     Column(
         modifier = Modifier
