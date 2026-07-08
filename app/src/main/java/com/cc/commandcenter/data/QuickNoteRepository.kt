@@ -21,6 +21,7 @@ object QuickNoteRepository {
                 id = System.currentTimeMillis(),
                 text = text.trim(),
                 createdAt = LocalTime.now().withSecond(0).withNano(0).toString(),
+                updatedAt = LocalTime.now().withSecond(0).withNano(0).toString(),
                 source = source
             )
         )
