@@ -1,38 +1,34 @@
 package com.cc.commandcenter.screens
-import com.cc.commandcenter.data.QuickNoteRepository
+
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.cc.commandcenter.components.CcActionBar
+import com.cc.commandcenter.data.QuickNoteRepository
 import com.cc.commandcenter.ui.theme.CcMidnight
-
-/**
- * Directe notitie
- *
- * Kernprincipe:
- * CC is ontworpen als S Pen-first schrijfervaring.
- *
- * De gebruiker moet een gedachte kunnen opschrijven alsof hij op papier schrijft.
- * Handschrift moet later feilloos herkend kunnen worden en daarna als tekst
- * in Nog organiseren verschijnen.
- *
- * Nu:
- * - toetsenbordinput
- *
- * Later:
- * - S Pen handschrift
- * - handschriftherkenning
- * - omzetting naar QuickNote
- * - AI doet voorstellen
- * - gebruiker beslist
- */
+import com.cc.commandcenter.ui.theme.CcMuted
+import com.cc.commandcenter.ui.theme.CcText
 
 @Composable
 fun QuickNoteScreen(
@@ -47,33 +43,72 @@ fun QuickNoteScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(CcMidnight)
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+            .padding(horizontal = 24.dp, vertical = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Column(
+            modifier = Modifier.widthIn(max = 960.dp)
+        ) {
+            Text(
+                text = "Nieuwe gedachte",
+                color = CcText,
+                fontSize = 34.sp,
+                fontWeight = FontWeight.Light
+            )
 
-        Text("Directe notitie")
+            Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(
-            value = note,
-            onValueChange = { note = it },
-            modifier = Modifier.fillMaxSize(),
-            placeholder = {
-                Text("Schrijf direct je gedachte op…")
+            Text(
+                text = "Schrijf je gedachte op alsof je het op papier zet.",
+                color = CcMuted,
+                fontSize = 16.sp
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .clip(RoundedCornerShape(28.dp))
+                    .background(Color(0xFF1A180F))
+                    .border(
+                        width = 1.dp,
+                        color = Color(0xFFC8A75D).copy(alpha = 0.22f),
+                        shape = RoundedCornerShape(28.dp)
+                    )
+                    .padding(24.dp)
+            ) {
+                if (note.isBlank()) {
+                    Text(
+                        text = "Plaats je handschrift of typ een eerste notitie…",
+                        color = CcMuted,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Light
+                    )
+                } else {
+                    Text(
+                        text = note,
+                        color = CcText,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Light
+                    )
+                }
             }
-        )
 
-        CcActionBar(
-            onBack = {
-                onBack()
-            },
-            onDelete = {
-                note = ""
-                onClear()
-            },
-            onSave = {
-                onSave(note)
-                onBack()
-            }
-        )
+            Spacer(modifier = Modifier.height(24.dp))
+
+            CcActionBar(
+                onBack = onBack,
+                onDelete = {
+                    note = ""
+                    onClear()
+                },
+                onSave = {
+                    onSave(note)
+                    onBack()
+                }
+            )
+        }
     }
 }
