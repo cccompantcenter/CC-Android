@@ -14,7 +14,18 @@ data class Card(
     val tags: List<String> = emptyList(),
     val favorite: Boolean = false,
     val originalGedachteId: Long? = null,
-    val originalGedachtePreview: String? = null
+    val originalGedachtePreview: String? = null,
+
+    // CC-040 Universal Card foundation fields.
+    val sourceGedachteId: Long? = originalGedachteId,
+    val type: CardType = category.toCardType(),
+    val destination: CardDestination = category.toCardDestination(),
+    val createdAt: String = createdLabel,
+    val updatedAt: String = createdLabel,
+    val linkedCardIds: List<Long> = emptyList(),
+    val projectId: Long? = null,
+    val calendarItemId: Long? = null,
+    val contactId: Long? = null
 )
 
 enum class CardCategory {
@@ -35,4 +46,43 @@ enum class CardPriority {
 enum class CardStatus {
     OPEN,
     COMPLETED
+}
+
+enum class CardType {
+    TASK,
+    PROJECT,
+    NOTE,
+    MEETING,
+    CONTACT,
+    IDEA,
+    WAITING_FOR,
+    ARCHIVE
+}
+
+enum class CardDestination {
+    TODAY,
+    PROJECT,
+    CALENDAR,
+    CONTACT,
+    WAITING,
+    ARCHIVE,
+    INBOX
+}
+
+private fun CardCategory.toCardType(): CardType = when (this) {
+    CardCategory.FOCUS,
+    CardCategory.MY_TASKS,
+    CardCategory.OTHERS -> CardType.TASK
+    CardCategory.WAITING -> CardType.WAITING_FOR
+    CardCategory.IDEAS -> CardType.IDEA
+    CardCategory.ARCHIVE -> CardType.ARCHIVE
+}
+
+private fun CardCategory.toCardDestination(): CardDestination = when (this) {
+    CardCategory.FOCUS,
+    CardCategory.MY_TASKS,
+    CardCategory.OTHERS -> CardDestination.TODAY
+    CardCategory.WAITING -> CardDestination.WAITING
+    CardCategory.IDEAS -> CardDestination.INBOX
+    CardCategory.ARCHIVE -> CardDestination.ARCHIVE
 }
