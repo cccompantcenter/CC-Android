@@ -25,6 +25,7 @@ import com.cc.commandcenter.model.CardCategory
 import com.cc.commandcenter.model.CardPriority
 import com.cc.commandcenter.model.CardStatus
 import com.cc.commandcenter.model.Screen
+import com.cc.commandcenter.screens.GedachtenScreen
 import com.cc.commandcenter.screens.MainContent
 import com.cc.commandcenter.screens.QuickNoteScreen
 import com.cc.commandcenter.screens.StartScreen
@@ -34,6 +35,7 @@ import com.cc.commandcenter.ui.theme.CcMidnight
 fun CCApp() {
     var showStartScreen by remember { mutableStateOf(true) }
     var showQuickNoteScreen by remember { mutableStateOf(false) }
+    var showGedachtenScreen by remember { mutableStateOf(false) }
     var currentScreen by remember { mutableStateOf(Screen.TODAY) }
     var quickNoteReturnsToDashboard by remember { mutableStateOf(false) }
 
@@ -85,8 +87,17 @@ fun CCApp() {
                 quickNoteReturnsToDashboard = true
                 showQuickNoteScreen = true
                 showStartScreen = false
+            },
+            onOpenGedachten = {
+                showGedachtenScreen = true
+                showStartScreen = false
             }
         )
+        return
+    }
+
+    if (showGedachtenScreen) {
+        GedachtenScreen()
         return
     }
 
