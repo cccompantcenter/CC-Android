@@ -1,9 +1,12 @@
 package com.cc.commandcenter.screens
-
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import com.cc.commandcenter.ui.theme.CcText
+import com.cc.commandcenter.ui.theme.CcMuted
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,21 +46,29 @@ fun NewCardScreen(
     ) {
         CcHeader(
             title = "Nieuwe Card",
-            subtitle = "Leg eerst de basis vast."
+            subtitle = "Schrijf eerst vrij met je S Pen. Daarna kun je ordenen."
         )
 
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 180.dp),
             value = title,
             onValueChange = { title = it },
-            label = { Text("Titel") },
-            singleLine = true
+            minLines = 6,
+            placeholder = {
+                Text(
+                    text = "Schrijf hier je nieuwe card met S Pen...",
+                    color = CcMuted
+                )
+            },
+            colors = newCardTextFieldColors()
         )
 
         Text("Categorie")
-        CategoryOption("Focus", CardCategory.FOCUS, category) { category = it }
         CategoryOption("Mijn taken", CardCategory.MY_TASKS, category) { category = it }
         CategoryOption("Reactie afwachten", CardCategory.WAITING, category) { category = it }
+        CategoryOption("Focus", CardCategory.FOCUS, category) { category = it }
         CategoryOption("Taken van anderen", CardCategory.OTHERS, category) { category = it }
         CategoryOption("Idee", CardCategory.IDEAS, category) { category = it }
 
@@ -66,7 +77,8 @@ fun NewCardScreen(
             value = dueDate,
             onValueChange = { dueDate = it },
             label = { Text("Aandachtsdatum") },
-            singleLine = true
+            singleLine = true,
+            colors = newCardTextFieldColors()
         )
 
         Text("Prioriteit")
@@ -78,12 +90,22 @@ fun NewCardScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             CcPrimaryButton(
-                text = "Annuleren",
+                text = "Terug",
                 onClick = onCancel
             )
 
             CcPrimaryButton(
-                text = "Aanmaken",
+                text = "Wissen",
+                onClick = {
+                    title = ""
+                    priority = CardPriority.NORMAL
+                    category = CardCategory.MY_TASKS
+                    dueDate = LocalDate.now().toString()
+                }
+            )
+
+            CcPrimaryButton(
+                text = "Opslaan",
                 onClick = {
                     if (title.isNotBlank()) {
                         onCreateCard(
@@ -122,5 +144,17 @@ private fun PriorityOption(
     CcPrimaryButton(
         text = if (value == selected) "● $label" else "○ $label",
         onClick = { onSelect(value) }
-    )
+    ) 
 }
+@Composable
+private fun newCardTextFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedTextColor = CcText,
+    unfocusedTextColor = CcText,
+    focusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+    unfocusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+    focusedBorderColor = CcText,
+    unfocusedBorderColor = CcMuted,
+    cursorColor = CcText,
+    focusedPlaceholderColor = CcMuted,
+    unfocusedPlaceholderColor = CcMuted
+)
