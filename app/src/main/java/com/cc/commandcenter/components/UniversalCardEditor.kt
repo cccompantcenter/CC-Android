@@ -1,5 +1,8 @@
 package com.cc.commandcenter.components
 
+import android.graphics.Typeface
+import android.text.InputType
+import android.widget.EditText
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,18 +24,18 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cc.commandcenter.components.CcPrimaryButton
@@ -46,7 +49,7 @@ import com.cc.commandcenter.ui.theme.CcGold
 import com.cc.commandcenter.ui.theme.CcMuted
 import com.cc.commandcenter.ui.theme.CcText
 import com.cc.commandcenter.util.formatDueDate
-import kotlinx.coroutines.yield
+import androidx.core.widget.doAfterTextChanged
 
 @Composable
 fun UniversalCardEditor(
@@ -90,13 +93,10 @@ fun UniversalCardEditor(
         mutableStateOf(card.destination.toUserFacingDestination(card.category))
     }
     var tagsText by remember(card.id) { mutableStateOf(card.tags.joinToString(", ")) }
-    val notesFocusRequester = remember(card.id) { FocusRequester() }
+    var shouldRequestNotesFocus by remember(card.id, autoFocusNotes) { mutableStateOf(autoFocusNotes) }
 
     LaunchedEffect(card.id, autoFocusNotes) {
-        if (autoFocusNotes) {
-            yield()
-            notesFocusRequester.requestFocus()
-        }
+        shouldRequestNotesFocus = autoFocusNotes
     }
 
     Column(
@@ -124,23 +124,15 @@ fun UniversalCardEditor(
 
         SectionTitle("Handgeschreven notities")
 
-        OutlinedTextField(
+        SPenNotesField(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 240.dp)
-                .focusRequester(notesFocusRequester),
+                .heightIn(min = 240.dp),
             value = notes,
             onValueChange = { notes = it },
-            minLines = 10,
-            enabled = true,
-            readOnly = false,
-            placeholder = {
-                Text(
-                    text = "Schrijf direct met S Pen of typ in dit notitieveld",
-                    color = CcMuted
-                )
-            },
-            colors = cardTextFieldColors()
+            placeholder = "Schrijf direct met S Pen of typ in dit notitieveld",
+            requestFocus = shouldRequestNotesFocus,
+            onFocusRequested = { shouldRequestNotesFocus = false }
         )
 
         SectionTitle("Titel of handgeschreven kop")
@@ -352,6 +344,72 @@ private fun cardTextFieldColors() = OutlinedTextFieldDefaults.colors(
     focusedBorderColor = CcGold,
     unfocusedBorderColor = CcText.copy(alpha = 0.65f)
 )
+
+@Composable
+private fun SPenNotesField(
+    modifier: Modifier = Modifier,
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    requestFocus: Boolean,
+    onFocusRequested: () -> Unit
+) {
+    val backgroundColor = Color(0xFF1A180F)
+    val borderColor = CcText.copy(alpha = 0.65f)
+
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(backgroundColor)
+            .border(1.dp, borderColor, RoundedCornerShape(12.dp))
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+    ) {
+        AndroidView(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 220.dp),
+            factory = { context ->
+                EditText(context).apply {
+                    setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                    setTextColor(CcText.toArgb())
+                    setHintTextColor(CcMuted.toArgb())
+                    textSize = 18f
+                    typeface = Typeface.SANS_SERIF
+                    minLines = 10
+                    setLines(10)
+                    isSingleLine = false
+                    setHorizontallyScrolling(false)
+                    isVerticalScrollBarEnabled = true
+                    overScrollMode = android.view.View.OVER_SCROLL_IF_CONTENT_SCROLLS
+                    inputType = InputType.TYPE_CLASS_TEXT or
+                        InputType.TYPE_TEXT_FLAG_MULTI_LINE or
+                        InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+                    imeOptions = android.view.inputmethod.EditorInfo.IME_FLAG_NO_EXTRACT_UI
+                    hint = placeholder
+                    doAfterTextChanged {
+                        val newText = it?.toString().orEmpty()
+                        if (newText != value) {
+                            onValueChange(newText)
+                        }
+                    }
+                }
+            },
+            update = { editText ->
+                if (editText.text?.toString() != value) {
+                    editText.setText(value)
+                    editText.setSelection(editText.text?.length ?: 0)
+                }
+                if (requestFocus) {
+                    editText.requestFocus()
+                    editText.post {
+                        editText.setSelection(editText.text?.length ?: 0)
+                    }
+                    onFocusRequested()
+                }
+            }
+        )
+    }
+}
 
 private fun com.cc.commandcenter.model.CardCategory.label() = when (this) {
     com.cc.commandcenter.model.CardCategory.FOCUS -> "Focus"
