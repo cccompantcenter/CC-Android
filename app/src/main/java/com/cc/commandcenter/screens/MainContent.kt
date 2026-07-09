@@ -90,7 +90,7 @@ fun MainContent(
             activeCard != null -> {
                 CardDetailScreen(
                     card = activeCard,
-                    autoFocusNotes = pendingNewCardIds.contains(activeCard.id),
+                    autoFocusPrimaryInput = pendingNewCardIds.contains(activeCard.id),
                     onBack = {
                         if (pendingNewCardIds.contains(activeCard.id) && isEmptyDraftCard(activeCard)) {
                             onDeleteCard(activeCard)

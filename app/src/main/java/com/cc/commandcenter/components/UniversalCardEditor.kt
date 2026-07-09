@@ -54,7 +54,7 @@ import androidx.core.widget.doAfterTextChanged
 @Composable
 fun UniversalCardEditor(
     cardId: Long,
-    autoFocusNotes: Boolean = false,
+    autoFocusPrimaryInput: Boolean = false,
     onBack: () -> Unit,
     onDelete: () -> Unit,
     onSave: (Card) -> Unit
@@ -93,10 +93,12 @@ fun UniversalCardEditor(
         mutableStateOf(card.destination.toUserFacingDestination(card.category))
     }
     var tagsText by remember(card.id) { mutableStateOf(card.tags.joinToString(", ")) }
-    var shouldRequestNotesFocus by remember(card.id, autoFocusNotes) { mutableStateOf(autoFocusNotes) }
+    var shouldRequestTitleFocus by remember(card.id, autoFocusPrimaryInput) {
+        mutableStateOf(autoFocusPrimaryInput)
+    }
 
-    LaunchedEffect(card.id, autoFocusNotes) {
-        shouldRequestNotesFocus = autoFocusNotes
+    LaunchedEffect(card.id, autoFocusPrimaryInput) {
+        shouldRequestTitleFocus = autoFocusPrimaryInput
     }
 
     Column(
@@ -122,6 +124,21 @@ fun UniversalCardEditor(
             fontSize = 16.sp
         )
 
+        SectionTitle("Titel of handgeschreven kop")
+
+        SPenNotesField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 120.dp),
+            value = title,
+            onValueChange = { title = it },
+            placeholder = "Schrijf direct je kop met S Pen of typ als aanvulling",
+            minLines = 3,
+            singleLine = false,
+            requestFocus = shouldRequestTitleFocus,
+            onFocusRequested = { shouldRequestTitleFocus = false }
+        )
+
         SectionTitle("Handgeschreven notities")
 
         SPenNotesField(
@@ -131,24 +148,8 @@ fun UniversalCardEditor(
             value = notes,
             onValueChange = { notes = it },
             placeholder = "Schrijf direct met S Pen of typ in dit notitieveld",
-            requestFocus = shouldRequestNotesFocus,
-            onFocusRequested = { shouldRequestNotesFocus = false }
-        )
-
-        SectionTitle("Titel of handgeschreven kop")
-
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
-            value = title,
-            onValueChange = { title = it },
-            singleLine = true,
-            placeholder = {
-                Text(
-                    text = "Schrijf eerst met S Pen of vul later aan",
-                    color = CcMuted
-                )
-            },
-            colors = cardTextFieldColors()
+            minLines = 10,
+            singleLine = false
         )
 
         SectionTitle("Aandachtsdatum")
@@ -170,34 +171,24 @@ fun UniversalCardEditor(
 
         SectionTitle("Beschrijving of handgeschreven uitwerking")
 
-        OutlinedTextField(
+        SPenNotesField(
             modifier = Modifier.fillMaxWidth(),
             value = description,
             onValueChange = { description = it },
             minLines = 5,
-            placeholder = {
-                Text(
-                    text = "Werk de Card uit met S Pen of typ een aanvulling",
-                    color = CcMuted
-                )
-            },
-            colors = cardTextFieldColors()
+            singleLine = false,
+            placeholder = "Werk de Card uit met S Pen of typ een aanvulling"
         )
 
         SectionTitle("Tags")
 
-        OutlinedTextField(
+        SPenNotesField(
             modifier = Modifier.fillMaxWidth(),
             value = tagsText,
             onValueChange = { tagsText = it },
+            minLines = 1,
             singleLine = true,
-            placeholder = {
-                Text(
-                    text = "Werk, Overleg",
-                    color = CcMuted
-                )
-            },
-            colors = cardTextFieldColors()
+            placeholder = "Werk, Overleg"
         )
 
         Text(
@@ -351,8 +342,10 @@ private fun SPenNotesField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
-    requestFocus: Boolean,
-    onFocusRequested: () -> Unit
+    minLines: Int,
+    singleLine: Boolean,
+    requestFocus: Boolean = false,
+    onFocusRequested: () -> Unit = {}
 ) {
     val backgroundColor = Color(0xFF1A180F)
     val borderColor = CcText.copy(alpha = 0.65f)
@@ -375,22 +368,23 @@ private fun SPenNotesField(
                     setHintTextColor(CcMuted.toArgb())
                     textSize = 18f
                     typeface = Typeface.SANS_SERIF
-                    minLines = 10
-                    setLines(10)
-                    isSingleLine = false
-                    setHorizontallyScrolling(false)
+                    this.minLines = minLines
+                    setLines(minLines)
+                    isSingleLine = singleLine
+                    setHorizontallyScrolling(singleLine)
                     isVerticalScrollBarEnabled = true
                     overScrollMode = android.view.View.OVER_SCROLL_IF_CONTENT_SCROLLS
-                    inputType = InputType.TYPE_CLASS_TEXT or
-                        InputType.TYPE_TEXT_FLAG_MULTI_LINE or
-                        InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+                    inputType = if (singleLine) {
+                        InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+                    } else {
+                        InputType.TYPE_CLASS_TEXT or
+                            InputType.TYPE_TEXT_FLAG_MULTI_LINE or
+                            InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+                    }
                     imeOptions = android.view.inputmethod.EditorInfo.IME_FLAG_NO_EXTRACT_UI
                     hint = placeholder
                     doAfterTextChanged {
-                        val newText = it?.toString().orEmpty()
-                        if (newText != value) {
-                            onValueChange(newText)
-                        }
+                        onValueChange(it?.toString().orEmpty())
                     }
                 }
             },

@@ -7,14 +7,14 @@ import com.cc.commandcenter.model.Card
 @Composable
 fun CardDetailScreen(
     card: Card,
-    autoFocusNotes: Boolean = false,
+    autoFocusPrimaryInput: Boolean = false,
     onBack: () -> Unit,
     onDelete: () -> Unit,
     onSave: (Card) -> Unit
 ) {
     UniversalCardEditor(
         cardId = card.id,
-        autoFocusNotes = autoFocusNotes,
+        autoFocusPrimaryInput = autoFocusPrimaryInput,
         onBack = onBack,
         onDelete = onDelete,
         onSave = onSave
