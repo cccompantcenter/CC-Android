@@ -1,5 +1,4 @@
 package com.cc.commandcenter.screens
-import com.cc.commandcenter.screens.NogOrganiserenScreen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -45,7 +44,7 @@ fun MainContent(
     ) -> Card,
     onOpenGedachte: (com.cc.commandcenter.model.QuickNote) -> Unit = {}
 ) {
-    var selectedCard by remember { mutableStateOf<Card?>(null) }
+    var selectedCardId by remember { mutableStateOf<Long?>(null) }
     var pendingNewCardIds by remember { mutableStateOf(emptySet<Long>()) }
 
     fun startCreatingCard(initialCategory: CardCategory) {
@@ -56,7 +55,7 @@ fun MainContent(
             LocalDate.now().toString()
         )
         pendingNewCardIds = pendingNewCardIds + newCard.id
-        selectedCard = newCard
+        selectedCardId = newCard.id
     }
 
     Column(
@@ -66,7 +65,9 @@ fun MainContent(
             .background(Color(0xFF15130F))
             .padding(32.dp)
     ) {
-        if (selectedCard == null) {
+        val activeCard = selectedCardId?.let { id -> cards.firstOrNull { it.id == id } }
+
+        if (activeCard == null) {
             Text(
                 text = screen.title,
                 color = CcText,
@@ -85,8 +86,6 @@ fun MainContent(
             Spacer(modifier = Modifier.height(32.dp))
         }
 
-        val activeCard = selectedCard
-
         when {
             activeCard != null -> {
                 CardDetailScreen(
@@ -97,17 +96,18 @@ fun MainContent(
                             onDeleteCard(activeCard)
                             pendingNewCardIds = pendingNewCardIds - activeCard.id
                         }
-                        selectedCard = null
+                        selectedCardId = null
                     },
                     onDelete = {
                         onDeleteCard(activeCard)
                         pendingNewCardIds = pendingNewCardIds - activeCard.id
-                        selectedCard = null
+                        selectedCardId = null
                     },
                     onSave = { updatedCard ->
+                        val wasPendingNewCard = pendingNewCardIds.contains(updatedCard.id)
                         onSaveCard(updatedCard)
                         pendingNewCardIds = pendingNewCardIds - updatedCard.id
-                        selectedCard = updatedCard
+                        selectedCardId = if (wasPendingNewCard) null else updatedCard.id
                     }
                 )
             }
@@ -116,7 +116,7 @@ fun MainContent(
                 when (screen) {
                     Screen.TODAY -> TodayScreen(
                         cards = cards,
-                        onCardClick = { selectedCard = it },
+                        onCardClick = { selectedCardId = it.id },
                         onAddCard = { startCreatingCard(CardCategory.MY_TASKS) }
                     )
 
@@ -124,14 +124,14 @@ fun MainContent(
 
                     Screen.FOCUS -> FocusScreen(
                         cards = cards,
-                        onCardClick = { selectedCard = it }
+                        onCardClick = { selectedCardId = it.id }
                     )
 
                     Screen.MY_TASKS -> CardPlaceholder("Mijn taken", "Hier komen straks jouw eigen Cards.")
                     Screen.WAITING -> {
                         WaitingCardsScreen(
                             cards = cards,
-                            onCardClick = { selectedCard = it }
+                            onCardClick = { selectedCardId = it.id }
                         )
 
                         Spacer(modifier = Modifier.height(24.dp))

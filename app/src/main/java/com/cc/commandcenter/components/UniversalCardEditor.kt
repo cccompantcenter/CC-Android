@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -45,6 +46,7 @@ import com.cc.commandcenter.ui.theme.CcGold
 import com.cc.commandcenter.ui.theme.CcMuted
 import com.cc.commandcenter.ui.theme.CcText
 import com.cc.commandcenter.util.formatDueDate
+import kotlinx.coroutines.yield
 
 @Composable
 fun UniversalCardEditor(
@@ -88,10 +90,11 @@ fun UniversalCardEditor(
         mutableStateOf(card.destination.toUserFacingDestination(card.category))
     }
     var tagsText by remember(card.id) { mutableStateOf(card.tags.joinToString(", ")) }
-    val notesFocusRequester = remember { FocusRequester() }
+    val notesFocusRequester = remember(card.id) { FocusRequester() }
 
     LaunchedEffect(card.id, autoFocusNotes) {
         if (autoFocusNotes) {
+            yield()
             notesFocusRequester.requestFocus()
         }
     }
@@ -117,6 +120,27 @@ fun UniversalCardEditor(
             text = "S Pen eerst: schrijf of annoteer waar mogelijk met de pen. Toetsenbord blijft beschikbaar voor snelle correcties.",
             color = CcMuted,
             fontSize = 16.sp
+        )
+
+        SectionTitle("Handgeschreven notities")
+
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 240.dp)
+                .focusRequester(notesFocusRequester),
+            value = notes,
+            onValueChange = { notes = it },
+            minLines = 10,
+            enabled = true,
+            readOnly = false,
+            placeholder = {
+                Text(
+                    text = "Schrijf direct met S Pen of typ in dit notitieveld",
+                    color = CcMuted
+                )
+            },
+            colors = cardTextFieldColors()
         )
 
         SectionTitle("Titel of handgeschreven kop")
@@ -199,37 +223,6 @@ fun UniversalCardEditor(
                 }
             }
         }
-
-        SectionTitle("Handgeschreven notities")
-
-        Text(
-            text = "+ Nieuwe notitie",
-            color = CcGold,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Text(
-            text = if (card.notes.isBlank()) "Nog geen notities." else card.notes,
-            color = CcText,
-            fontSize = 18.sp
-        )
-
-        OutlinedTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .focusRequester(notesFocusRequester),
-            value = notes,
-            onValueChange = { notes = it },
-            minLines = 4,
-            placeholder = {
-                Text(
-                    text = "Schrijf je notities met S Pen, of typ als aanvulling",
-                    color = CcMuted
-                )
-            },
-            colors = cardTextFieldColors()
-        )
 
         if (card.originalGedachteId != null) {
             SectionTitle("Oorspronkelijke gedachte")
