@@ -30,7 +30,6 @@ import com.cc.commandcenter.screens.GedachtenScreen
 import com.cc.commandcenter.screens.GedachteProcessingScreen
 import com.cc.commandcenter.screens.CardDetailScreen
 import com.cc.commandcenter.screens.MainContent
-import com.cc.commandcenter.screens.NewCardScreen
 import com.cc.commandcenter.screens.QuickNoteScreen
 import com.cc.commandcenter.screens.StartScreen
 import com.cc.commandcenter.ui.theme.CcMidnight

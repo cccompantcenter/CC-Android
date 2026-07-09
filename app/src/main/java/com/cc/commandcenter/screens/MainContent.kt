@@ -24,10 +24,12 @@ import com.cc.commandcenter.components.CcCard
 import com.cc.commandcenter.model.Card
 import com.cc.commandcenter.model.CardCategory
 import com.cc.commandcenter.model.CardPriority
+import com.cc.commandcenter.model.CardStatus
 import com.cc.commandcenter.model.Screen
 import com.cc.commandcenter.subtitleFor
 import com.cc.commandcenter.ui.theme.CcMuted
 import com.cc.commandcenter.ui.theme.CcText
+import java.time.LocalDate
 
 @Composable
 fun MainContent(
@@ -44,7 +46,18 @@ fun MainContent(
     onOpenGedachte: (com.cc.commandcenter.model.QuickNote) -> Unit = {}
 ) {
     var selectedCard by remember { mutableStateOf<Card?>(null) }
-    var isCreatingCard by remember { mutableStateOf(false) }
+    var pendingNewCardIds by remember { mutableStateOf(emptySet<Long>()) }
+
+    fun startCreatingCard(initialCategory: CardCategory) {
+        val newCard = onCreateCard(
+            "Nieuwe Card",
+            initialCategory,
+            CardPriority.NORMAL,
+            LocalDate.now().toString()
+        )
+        pendingNewCardIds = pendingNewCardIds + newCard.id
+        selectedCard = newCard
+    }
 
     Column(
         modifier = Modifier
@@ -53,7 +66,7 @@ fun MainContent(
             .background(Color(0xFF15130F))
             .padding(32.dp)
     ) {
-        if (!isCreatingCard && selectedCard == null) {
+        if (selectedCard == null) {
             Text(
                 text = screen.title,
                 color = CcText,
@@ -75,31 +88,25 @@ fun MainContent(
         val activeCard = selectedCard
 
         when {
-            isCreatingCard -> {
-                NewCardScreen(
-                    onCancel = {
-                        isCreatingCard = false
-                    },
-                    onCreateCard = { title, category, priority, dueDate ->
-                        val newCard = onCreateCard(title, category, priority, dueDate)
-                        isCreatingCard = false
-                        selectedCard = newCard
-                    }
-                )
-            }
-
             activeCard != null -> {
                 CardDetailScreen(
                     card = activeCard,
+                    autoFocusNotes = pendingNewCardIds.contains(activeCard.id),
                     onBack = {
+                        if (pendingNewCardIds.contains(activeCard.id) && isEmptyDraftCard(activeCard)) {
+                            onDeleteCard(activeCard)
+                            pendingNewCardIds = pendingNewCardIds - activeCard.id
+                        }
                         selectedCard = null
                     },
                     onDelete = {
                         onDeleteCard(activeCard)
+                        pendingNewCardIds = pendingNewCardIds - activeCard.id
                         selectedCard = null
                     },
                     onSave = { updatedCard ->
                         onSaveCard(updatedCard)
+                        pendingNewCardIds = pendingNewCardIds - updatedCard.id
                         selectedCard = updatedCard
                     }
                 )
@@ -110,7 +117,7 @@ fun MainContent(
                     Screen.TODAY -> TodayScreen(
                         cards = cards,
                         onCardClick = { selectedCard = it },
-                        onAddCard = { isCreatingCard = true }
+                        onAddCard = { startCreatingCard(CardCategory.MY_TASKS) }
                     )
 
                     Screen.NOG_ORGANISEREN -> GedachtenScreen(onOpenGedachte = onOpenGedachte)
@@ -130,7 +137,7 @@ fun MainContent(
                         Spacer(modifier = Modifier.height(24.dp))
 
                         androidx.compose.material3.Button(
-                            onClick = { isCreatingCard = true }
+                            onClick = { startCreatingCard(CardCategory.WAITING) }
                         ) {
                             Text("Nieuwe Card")
                         }
@@ -142,6 +149,17 @@ fun MainContent(
             }
         }
     }
+}
+
+private fun isEmptyDraftCard(card: Card): Boolean {
+    val title = card.title.trim()
+    return (title.isBlank() || title == "Nieuwe Card") &&
+        card.description.isBlank() &&
+        card.notes.isBlank() &&
+        card.tags.isEmpty() &&
+        !card.favorite &&
+        card.priority == CardPriority.NORMAL &&
+        card.status == CardStatus.OPEN
 }
 
 @Composable
