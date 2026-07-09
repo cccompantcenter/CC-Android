@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cc.commandcenter.components.CardPlaceholder
+import com.cc.commandcenter.components.CcCard
 import com.cc.commandcenter.model.Card
 import com.cc.commandcenter.model.CardCategory
 import com.cc.commandcenter.model.CardPriority
@@ -99,7 +100,7 @@ fun MainContent(
                     },
                     onSave = { updatedCard ->
                         onSaveCard(updatedCard)
-                        selectedCard = null
+                        selectedCard = updatedCard
                     }
                 )
             }
@@ -120,12 +121,57 @@ fun MainContent(
                     )
 
                     Screen.MY_TASKS -> CardPlaceholder("Mijn taken", "Hier komen straks jouw eigen Cards.")
-                    Screen.WAITING -> CardPlaceholder("Reactie afwachten", "Hier komen Cards waarbij je wacht op iemand anders.")
+                    Screen.WAITING -> {
+                        WaitingCardsScreen(
+                            cards = cards,
+                            onCardClick = { selectedCard = it }
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        androidx.compose.material3.Button(
+                            onClick = { isCreatingCard = true }
+                        ) {
+                            Text("Nieuwe Card")
+                        }
+                    }
                     Screen.OTHERS -> CardPlaceholder("Taken van anderen", "Hier komen Cards die bij een ander liggen.")
                     Screen.IDEAS -> CardPlaceholder("Ideeën", "Hier bewaar je losse gedachten voordat ze actie worden.")
                     Screen.ARCHIVE -> CardPlaceholder("Archief", "Hier komen afgeronde of bewaarde Cards.")
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun WaitingCardsScreen(
+    cards: List<Card>,
+    onCardClick: (Card) -> Unit
+) {
+    val waitingCards = cards.filter {
+        it.category == CardCategory.WAITING
+    }
+
+    if (waitingCards.isEmpty()) {
+        CardPlaceholder(
+            "Reactie afwachten",
+            "Hier komen Cards waarbij je wacht op iemand anders."
+        )
+        return
+    }
+
+    Column(
+        verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp)
+    ) {
+        waitingCards.forEach { card ->
+            CcCard(
+                card = card,
+                onToggleStatus = { },
+                onClick = {
+                    onCardClick(card)
+                }
+            )
         }
     }
 }

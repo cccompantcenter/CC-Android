@@ -79,6 +79,7 @@ fun UniversalCardEditor(
     var priority by remember(card.id) { mutableStateOf(card.priority) }
     var status by remember(card.id) { mutableStateOf(card.status) }
     var favorite by remember(card.id) { mutableStateOf(card.favorite) }
+    var notes by remember(card.id) { mutableStateOf(card.notes) }
     var destination by remember(card.id) {
         mutableStateOf(card.destination.toUserFacingDestination(card.category))
     }
@@ -203,6 +204,20 @@ fun UniversalCardEditor(
             fontSize = 18.sp
         )
 
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = notes,
+            onValueChange = { notes = it },
+            minLines = 4,
+            placeholder = {
+                Text(
+                    text = "Schrijf je notities met S Pen, of typ als aanvulling",
+                    color = CcMuted
+                )
+            },
+            colors = cardTextFieldColors()
+        )
+
         if (card.originalGedachteId != null) {
             SectionTitle("Oorspronkelijke gedachte")
 
@@ -261,6 +276,7 @@ fun UniversalCardEditor(
                 val updatedCard = card.copy(
                     title = title,
                     description = description,
+                    notes = notes,
                     category = destination.toCardCategory(card.category),
                     priority = priority,
                     status = status,
