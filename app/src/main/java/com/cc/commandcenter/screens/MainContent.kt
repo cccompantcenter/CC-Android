@@ -104,10 +104,9 @@ fun MainContent(
                         selectedCardId = null
                     },
                     onSave = { updatedCard ->
-                        val wasPendingNewCard = pendingNewCardIds.contains(updatedCard.id)
                         onSaveCard(updatedCard)
                         pendingNewCardIds = pendingNewCardIds - updatedCard.id
-                        selectedCardId = if (wasPendingNewCard) null else updatedCard.id
+                        selectedCardId = null
                     }
                 )
             }
@@ -117,27 +116,57 @@ fun MainContent(
                     Screen.TODAY -> TodayScreen(
                         cards = cards,
                         onCardClick = { selectedCardId = it.id },
+                        onToggleStatus = { card ->
+                            onSaveCard(
+                                card.copy(
+                                    status = if (card.status == CardStatus.OPEN) CardStatus.COMPLETED else CardStatus.OPEN
+                                )
+                            )
+                        },
                         onAddCard = { startCreatingCard(CardCategory.MY_TASKS) }
                     )
 
                     Screen.NOG_ORGANISEREN -> GedachtenScreen(onOpenGedachte = onOpenGedachte)
 
                     Screen.FOCUS -> FocusScreen(
-                        cards = cards,
-                        onCardClick = { selectedCardId = it.id }
+                        cards = cards.filter {
+                            it.category == CardCategory.FOCUS && it.status == CardStatus.OPEN
+                        },
+                        onCardClick = { selectedCardId = it.id },
+                        onToggleStatus = { card ->
+                            onSaveCard(
+                                card.copy(
+                                    status = if (card.status == CardStatus.OPEN) CardStatus.COMPLETED else CardStatus.OPEN
+                                )
+                            )
+                        }
                     )
 
                     Screen.MY_TASKS -> CategoryCardsScreen(
-                        cards = cards,
+                        cards = cards.filter { it.status == CardStatus.OPEN },
                         category = CardCategory.MY_TASKS,
                         emptyTitle = "Mijn taken",
                         emptyDescription = "Hier komen jouw eigen Cards.",
-                        onCardClick = { selectedCardId = it.id }
+                        onCardClick = { selectedCardId = it.id },
+                        onToggleStatus = { card ->
+                            onSaveCard(
+                                card.copy(
+                                    status = if (card.status == CardStatus.OPEN) CardStatus.COMPLETED else CardStatus.OPEN
+                                )
+                            )
+                        }
                     )
                     Screen.WAITING -> {
                         WaitingCardsScreen(
-                            cards = cards,
-                            onCardClick = { selectedCardId = it.id }
+                            cards = cards.filter { it.status == CardStatus.OPEN },
+                            onCardClick = { selectedCardId = it.id },
+                            onToggleStatus = { card ->
+                                onSaveCard(
+                                    card.copy(
+                                        status = if (card.status == CardStatus.OPEN) CardStatus.COMPLETED else CardStatus.OPEN
+                                    )
+                                )
+                            }
                         )
 
                         Spacer(modifier = Modifier.height(24.dp))
@@ -149,20 +178,40 @@ fun MainContent(
                         }
                     }
                     Screen.OTHERS -> CategoryCardsScreen(
-                        cards = cards,
+                        cards = cards.filter { it.status == CardStatus.OPEN },
                         category = CardCategory.OTHERS,
                         emptyTitle = "Taken van anderen",
                         emptyDescription = "Hier staan Cards die bij een ander liggen.",
-                        onCardClick = { selectedCardId = it.id }
+                        onCardClick = { selectedCardId = it.id },
+                        onToggleStatus = { card ->
+                            onSaveCard(
+                                card.copy(
+                                    status = if (card.status == CardStatus.OPEN) CardStatus.COMPLETED else CardStatus.OPEN
+                                )
+                            )
+                        }
                     )
                     Screen.IDEAS -> CategoryCardsScreen(
-                        cards = cards,
+                        cards = cards.filter { it.status == CardStatus.OPEN },
                         category = CardCategory.IDEAS,
                         emptyTitle = "Ideeën",
                         emptyDescription = "Hier bewaar je losse gedachten voordat ze actie worden.",
-                        onCardClick = { selectedCardId = it.id }
+                        onCardClick = { selectedCardId = it.id },
+                        onToggleStatus = { card ->
+                            onSaveCard(
+                                card.copy(
+                                    status = if (card.status == CardStatus.OPEN) CardStatus.COMPLETED else CardStatus.OPEN
+                                )
+                            )
+                        }
                     )
-                    Screen.ARCHIVE -> CardPlaceholder("Archief", "Hier komen afgeronde of bewaarde Cards.")
+                    Screen.ARCHIVE -> ArchiveCardsScreen(
+                        cards = cards,
+                        onCardClick = { selectedCardId = it.id },
+                        onReopen = { card ->
+                            onSaveCard(card.copy(status = CardStatus.OPEN))
+                        }
+                    )
                 }
             }
         }
@@ -186,7 +235,8 @@ private fun CategoryCardsScreen(
     category: CardCategory,
     emptyTitle: String,
     emptyDescription: String,
-    onCardClick: (Card) -> Unit
+    onCardClick: (Card) -> Unit,
+    onToggleStatus: (Card) -> Unit
 ) {
     val categoryCards = cards.filter { it.category == category }
 
@@ -204,7 +254,7 @@ private fun CategoryCardsScreen(
         categoryCards.forEach { card ->
             CcCard(
                 card = card,
-                onToggleStatus = { },
+                onToggleStatus = { onToggleStatus(card) },
                 onClick = { onCardClick(card) }
             )
         }
@@ -214,7 +264,8 @@ private fun CategoryCardsScreen(
 @Composable
 private fun WaitingCardsScreen(
     cards: List<Card>,
-    onCardClick: (Card) -> Unit
+    onCardClick: (Card) -> Unit,
+    onToggleStatus: (Card) -> Unit
 ) {
     val waitingCards = cards.filter {
         it.category == CardCategory.WAITING
@@ -234,10 +285,36 @@ private fun WaitingCardsScreen(
         waitingCards.forEach { card ->
             CcCard(
                 card = card,
-                onToggleStatus = { },
+                onToggleStatus = { onToggleStatus(card) },
                 onClick = {
                     onCardClick(card)
                 }
+            )
+        }
+    }
+}
+
+@Composable
+private fun ArchiveCardsScreen(
+    cards: List<Card>,
+    onCardClick: (Card) -> Unit,
+    onReopen: (Card) -> Unit
+) {
+    val archivedCards = cards.filter { it.status == CardStatus.COMPLETED }
+
+    if (archivedCards.isEmpty()) {
+        CardPlaceholder("Archief", "Hier komen afgeronde of bewaarde Cards.")
+        return
+    }
+
+    Column(
+        verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp)
+    ) {
+        archivedCards.forEach { card ->
+            CcCard(
+                card = card,
+                onToggleStatus = { onReopen(card) },
+                onClick = { onCardClick(card) }
             )
         }
     }

@@ -20,6 +20,7 @@ import java.time.LocalDate
 fun TodayScreen(
     cards: List<Card>,
     onCardClick: (Card) -> Unit,
+    onToggleStatus: (Card) -> Unit,
     onAddCard: () -> Unit
 ) {
     val today = LocalDate.now()
@@ -53,25 +54,29 @@ fun TodayScreen(
             cards = todayCards
                 .filter { it.category == CardCategory.FOCUS }
                 .take(3),
-            onCardClick = onCardClick
+            onCardClick = onCardClick,
+            onToggleStatus = onToggleStatus
         )
 
         TodaySection(
             title = "Vandaag op te pakken",
             cards = todayCards.filter { it.category == CardCategory.MY_TASKS },
-            onCardClick = onCardClick
+            onCardClick = onCardClick,
+            onToggleStatus = onToggleStatus
         )
 
         TodaySection(
             title = "Reactie afwachten",
             cards = todayCards.filter { it.category == CardCategory.WAITING },
-            onCardClick = onCardClick
+            onCardClick = onCardClick,
+            onToggleStatus = onToggleStatus
         )
 
         TodaySection(
             title = "Taken van anderen",
             cards = todayCards.filter { it.category == CardCategory.OTHERS },
-            onCardClick = onCardClick
+            onCardClick = onCardClick,
+            onToggleStatus = onToggleStatus
         )
     }
 }
@@ -89,7 +94,8 @@ private fun EmptyTodayState() {
 private fun TodaySection(
     title: String,
     cards: List<Card>,
-    onCardClick: (Card) -> Unit
+    onCardClick: (Card) -> Unit,
+    onToggleStatus: (Card) -> Unit
 ) {
     if (cards.isEmpty()) return
 
@@ -103,9 +109,7 @@ private fun TodaySection(
         cards.forEach { card ->
             CcCard(
                 card = card,
-                onToggleStatus = {
-                    // Status wijzigen volgt later centraal.
-                },
+                onToggleStatus = { onToggleStatus(card) },
                 onClick = {
                     onCardClick(card)
                 }
