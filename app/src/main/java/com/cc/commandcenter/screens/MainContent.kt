@@ -127,7 +127,13 @@ fun MainContent(
                         onCardClick = { selectedCardId = it.id }
                     )
 
-                    Screen.MY_TASKS -> CardPlaceholder("Mijn taken", "Hier komen straks jouw eigen Cards.")
+                    Screen.MY_TASKS -> CategoryCardsScreen(
+                        cards = cards,
+                        category = CardCategory.MY_TASKS,
+                        emptyTitle = "Mijn taken",
+                        emptyDescription = "Hier komen jouw eigen Cards.",
+                        onCardClick = { selectedCardId = it.id }
+                    )
                     Screen.WAITING -> {
                         WaitingCardsScreen(
                             cards = cards,
@@ -142,8 +148,20 @@ fun MainContent(
                             Text("Nieuwe Card")
                         }
                     }
-                    Screen.OTHERS -> CardPlaceholder("Taken van anderen", "Hier komen Cards die bij een ander liggen.")
-                    Screen.IDEAS -> CardPlaceholder("Ideeën", "Hier bewaar je losse gedachten voordat ze actie worden.")
+                    Screen.OTHERS -> CategoryCardsScreen(
+                        cards = cards,
+                        category = CardCategory.OTHERS,
+                        emptyTitle = "Taken van anderen",
+                        emptyDescription = "Hier staan Cards die bij een ander liggen.",
+                        onCardClick = { selectedCardId = it.id }
+                    )
+                    Screen.IDEAS -> CategoryCardsScreen(
+                        cards = cards,
+                        category = CardCategory.IDEAS,
+                        emptyTitle = "Ideeën",
+                        emptyDescription = "Hier bewaar je losse gedachten voordat ze actie worden.",
+                        onCardClick = { selectedCardId = it.id }
+                    )
                     Screen.ARCHIVE -> CardPlaceholder("Archief", "Hier komen afgeronde of bewaarde Cards.")
                 }
             }
@@ -160,6 +178,37 @@ private fun isEmptyDraftCard(card: Card): Boolean {
         !card.favorite &&
         card.priority == CardPriority.NORMAL &&
         card.status == CardStatus.OPEN
+}
+
+@Composable
+private fun CategoryCardsScreen(
+    cards: List<Card>,
+    category: CardCategory,
+    emptyTitle: String,
+    emptyDescription: String,
+    onCardClick: (Card) -> Unit
+) {
+    val categoryCards = cards.filter { it.category == category }
+
+    if (categoryCards.isEmpty()) {
+        CardPlaceholder(
+            title = emptyTitle,
+            body = emptyDescription
+        )
+        return
+    }
+
+    Column(
+        verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp)
+    ) {
+        categoryCards.forEach { card ->
+            CcCard(
+                card = card,
+                onToggleStatus = { },
+                onClick = { onCardClick(card) }
+            )
+        }
+    }
 }
 
 @Composable
