@@ -1,8 +1,5 @@
 package com.cc.commandcenter.components
 
-import android.graphics.Typeface
-import android.text.InputType
-import android.widget.EditText
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,8 +18,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
@@ -33,9 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cc.commandcenter.components.CcPrimaryButton
@@ -48,8 +41,9 @@ import com.cc.commandcenter.model.CardStatus
 import com.cc.commandcenter.ui.theme.CcGold
 import com.cc.commandcenter.ui.theme.CcMuted
 import com.cc.commandcenter.ui.theme.CcText
-import com.cc.commandcenter.util.formatDueDate
-import androidx.core.widget.doAfterTextChanged
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 @Composable
 fun UniversalCardEditor(
@@ -92,6 +86,7 @@ fun UniversalCardEditor(
     var destination by remember(card.id) {
         mutableStateOf(card.destination.toUserFacingDestination(card.category))
     }
+    var dueDateText by remember(card.id) { mutableStateOf(card.dueDate.orEmpty()) }
     var tagsText by remember(card.id) { mutableStateOf(card.tags.joinToString(", ")) }
     var shouldRequestTitleFocus by remember(card.id, autoFocusPrimaryInput) {
         mutableStateOf(autoFocusPrimaryInput)
@@ -126,7 +121,7 @@ fun UniversalCardEditor(
 
         SectionTitle("Titel of handgeschreven kop")
 
-        SPenNotesField(
+        SpenInputField(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 120.dp),
@@ -135,13 +130,13 @@ fun UniversalCardEditor(
             placeholder = "Schrijf direct je kop met S Pen of typ als aanvulling",
             minLines = 3,
             singleLine = false,
-            requestFocus = shouldRequestTitleFocus,
-            onFocusRequested = { shouldRequestTitleFocus = false }
+            autofocus = shouldRequestTitleFocus,
+            onAutofocusApplied = { shouldRequestTitleFocus = false }
         )
 
         SectionTitle("Handgeschreven notities")
 
-        SPenNotesField(
+        SpenInputField(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 240.dp),
@@ -149,29 +144,49 @@ fun UniversalCardEditor(
             onValueChange = { notes = it },
             placeholder = "Schrijf direct met S Pen of typ in dit notitieveld",
             minLines = 10,
+            minHeight = 240.dp,
             singleLine = false
         )
 
+        SectionTitle("Categorie")
+
+        ChoiceGroup {
+            userFacingDestinations.forEach { item ->
+                ChoiceChip(item.label(), destination == item) {
+                    destination = item
+                }
+            }
+        }
+
+        SectionTitle("Status")
+
+        ChoiceGroup {
+            ChoiceChip("Open", status == CardStatus.OPEN) { status = CardStatus.OPEN }
+            ChoiceChip("Voltooid", status == CardStatus.COMPLETED) { status = CardStatus.COMPLETED }
+        }
+
+        SectionTitle("Prioriteit")
+
+        ChoiceGroup {
+            ChoiceChip("Laag", priority == CardPriority.LOW) { priority = CardPriority.LOW }
+            ChoiceChip("Normaal", priority == CardPriority.NORMAL) { priority = CardPriority.NORMAL }
+            ChoiceChip("Hoog", priority == CardPriority.HIGH) { priority = CardPriority.HIGH }
+        }
+
         SectionTitle("Aandachtsdatum")
 
-        OutlinedTextField(
+        SpenInputField(
             modifier = Modifier.fillMaxWidth(),
-            value = formatDueDate(card.dueDate),
-            onValueChange = { },
-            singleLine = true,
-            readOnly = true,
-            placeholder = {
-                Text(
-                    text = "dd-MM-jjjj",
-                    color = CcMuted
-                )
-            },
-            colors = cardTextFieldColors()
+            value = dueDateText,
+            onValueChange = { dueDateText = it },
+            placeholder = "jjjj-mm-dd of dd-mm-jjjj",
+            minLines = 1,
+            singleLine = true
         )
 
         SectionTitle("Beschrijving of handgeschreven uitwerking")
 
-        SPenNotesField(
+        SpenInputField(
             modifier = Modifier.fillMaxWidth(),
             value = description,
             onValueChange = { description = it },
@@ -182,7 +197,7 @@ fun UniversalCardEditor(
 
         SectionTitle("Tags")
 
-        SPenNotesField(
+        SpenInputField(
             modifier = Modifier.fillMaxWidth(),
             value = tagsText,
             onValueChange = { tagsText = it },
@@ -196,16 +211,6 @@ fun UniversalCardEditor(
             color = CcMuted,
             fontSize = 14.sp
         )
-
-        SectionTitle("Bestemming in workflow")
-
-        ChoiceGroup {
-            userFacingDestinations.forEach { item ->
-                ChoiceChip(item.label(), destination == item) {
-                    destination = item
-                }
-            }
-        }
 
         if (card.originalGedachteId != null) {
             SectionTitle("Oorspronkelijke gedachte")
@@ -238,21 +243,6 @@ fun UniversalCardEditor(
             )
         }
 
-        SectionTitle("Prioriteit")
-
-        ChoiceGroup {
-            ChoiceChip("Laag", priority == CardPriority.LOW) { priority = CardPriority.LOW }
-            ChoiceChip("Normaal", priority == CardPriority.NORMAL) { priority = CardPriority.NORMAL }
-            ChoiceChip("Hoog", priority == CardPriority.HIGH) { priority = CardPriority.HIGH }
-        }
-
-        SectionTitle("Status")
-
-        ChoiceGroup {
-            ChoiceChip("Open", status == CardStatus.OPEN) { status = CardStatus.OPEN }
-            ChoiceChip("Voltooid", status == CardStatus.COMPLETED) { status = CardStatus.COMPLETED }
-        }
-
         Spacer(modifier = Modifier.height(24.dp))
 
         CcActionBar(
@@ -262,6 +252,10 @@ fun UniversalCardEditor(
                 onDelete()
             },
             onSave = {
+                val normalizedDueDate = normalizeDueDateInput(
+                    input = dueDateText,
+                    fallback = card.dueDate
+                )
                 val updatedCard = card.copy(
                     title = title,
                     description = description,
@@ -271,6 +265,7 @@ fun UniversalCardEditor(
                     status = status,
                     favorite = favorite,
                     destination = destination,
+                    dueDate = normalizedDueDate,
                     tags = tagsText.toTagList()
                 )
                 CardRepository.updateCard(updatedCard)
@@ -325,84 +320,25 @@ private fun ChoiceChip(
     )
 }
 
-@Composable
-private fun cardTextFieldColors() = OutlinedTextFieldDefaults.colors(
-    focusedTextColor = CcText,
-    unfocusedTextColor = CcText,
-    focusedLabelColor = CcGold,
-    unfocusedLabelColor = CcText,
-    cursorColor = CcGold,
-    focusedBorderColor = CcGold,
-    unfocusedBorderColor = CcText.copy(alpha = 0.65f)
-)
+private fun normalizeDueDateInput(input: String, fallback: String?): String? {
+    val trimmed = input.trim()
+    if (trimmed.isEmpty()) return null
 
-@Composable
-private fun SPenNotesField(
-    modifier: Modifier = Modifier,
-    value: String,
-    onValueChange: (String) -> Unit,
-    placeholder: String,
-    minLines: Int,
-    singleLine: Boolean,
-    requestFocus: Boolean = false,
-    onFocusRequested: () -> Unit = {}
-) {
-    val backgroundColor = Color(0xFF1A180F)
-    val borderColor = CcText.copy(alpha = 0.65f)
+    return parseIsoDate(trimmed)
+        ?: parseDutchDate(trimmed)
+        ?: fallback
+}
 
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(backgroundColor)
-            .border(1.dp, borderColor, RoundedCornerShape(12.dp))
-            .padding(horizontal = 12.dp, vertical = 10.dp)
-    ) {
-        AndroidView(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 220.dp),
-            factory = { context ->
-                EditText(context).apply {
-                    setBackgroundColor(android.graphics.Color.TRANSPARENT)
-                    setTextColor(CcText.toArgb())
-                    setHintTextColor(CcMuted.toArgb())
-                    textSize = 18f
-                    typeface = Typeface.SANS_SERIF
-                    this.minLines = minLines
-                    setLines(minLines)
-                    isSingleLine = singleLine
-                    setHorizontallyScrolling(singleLine)
-                    isVerticalScrollBarEnabled = true
-                    overScrollMode = android.view.View.OVER_SCROLL_IF_CONTENT_SCROLLS
-                    inputType = if (singleLine) {
-                        InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
-                    } else {
-                        InputType.TYPE_CLASS_TEXT or
-                            InputType.TYPE_TEXT_FLAG_MULTI_LINE or
-                            InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
-                    }
-                    imeOptions = android.view.inputmethod.EditorInfo.IME_FLAG_NO_EXTRACT_UI
-                    hint = placeholder
-                    doAfterTextChanged {
-                        onValueChange(it?.toString().orEmpty())
-                    }
-                }
-            },
-            update = { editText ->
-                if (editText.text?.toString() != value) {
-                    editText.setText(value)
-                    editText.setSelection(editText.text?.length ?: 0)
-                }
-                if (requestFocus) {
-                    editText.requestFocus()
-                    editText.post {
-                        editText.setSelection(editText.text?.length ?: 0)
-                    }
-                    onFocusRequested()
-                }
-            }
-        )
-    }
+private fun parseIsoDate(value: String): String? = try {
+    LocalDate.parse(value).toString()
+} catch (_: DateTimeParseException) {
+    null
+}
+
+private fun parseDutchDate(value: String): String? = try {
+    LocalDate.parse(value, DateTimeFormatter.ofPattern("dd-MM-yyyy")).toString()
+} catch (_: DateTimeParseException) {
+    null
 }
 
 private fun com.cc.commandcenter.model.CardCategory.label() = when (this) {
