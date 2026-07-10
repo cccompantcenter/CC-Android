@@ -184,17 +184,6 @@ fun UniversalCardEditor(
             singleLine = true
         )
 
-        SectionTitle("Beschrijving of handgeschreven uitwerking")
-
-        SpenInputField(
-            modifier = Modifier.fillMaxWidth(),
-            value = description,
-            onValueChange = { description = it },
-            minLines = 5,
-            singleLine = false,
-            placeholder = "Werk de Card uit met S Pen of typ een aanvulling"
-        )
-
         SectionTitle("Tags")
 
         SpenInputField(
