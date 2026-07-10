@@ -1,5 +1,6 @@
 package com.cc.commandcenter.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,19 +9,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,7 +31,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.cc.commandcenter.components.CcPrimaryButton
 import com.cc.commandcenter.data.CardRepository
 import com.cc.commandcenter.model.Card
 import com.cc.commandcenter.model.CardCategory
@@ -53,7 +52,9 @@ fun UniversalCardEditor(
     onDelete: () -> Unit,
     onSave: (Card) -> Unit
 ) {
-    val card = remember(cardId) { CardRepository.getCardById(cardId) }
+    val card = remember(cardId) {
+        CardRepository.getCardById(cardId)
+    }
 
     if (card == null) {
         Column(
@@ -74,21 +75,56 @@ fun UniversalCardEditor(
                 deleteLabel = "Sluiten"
             )
         }
+
         return
     }
 
-    var title by remember(card.id) { mutableStateOf(card.title) }
-    var description by remember(card.id) { mutableStateOf(card.description) }
-    var priority by remember(card.id) { mutableStateOf(card.priority) }
-    var status by remember(card.id) { mutableStateOf(card.status) }
-    var favorite by remember(card.id) { mutableStateOf(card.favorite) }
-    var notes by remember(card.id) { mutableStateOf(card.notes) }
-    var destination by remember(card.id) {
-        mutableStateOf(card.destination.toUserFacingDestination(card.category))
+    var title by remember(card.id) {
+        mutableStateOf(card.title)
     }
-    var dueDateText by remember(card.id) { mutableStateOf(card.dueDate.orEmpty()) }
-    var tagsText by remember(card.id) { mutableStateOf(card.tags.joinToString(", ")) }
-    var shouldRequestTitleFocus by remember(card.id, autoFocusPrimaryInput) {
+
+    var description by remember(card.id) {
+        mutableStateOf(card.description)
+    }
+
+    var priority by remember(card.id) {
+        mutableStateOf(card.priority)
+    }
+
+    var status by remember(card.id) {
+        mutableStateOf(card.status)
+    }
+
+    var favorite by remember(card.id) {
+        mutableStateOf(card.favorite)
+    }
+
+    var notes by remember(card.id) {
+        mutableStateOf(card.notes)
+    }
+
+    var destination by remember(card.id) {
+        mutableStateOf(
+            card.destination.toUserFacingDestination(card.category)
+        )
+    }
+
+    var dueDateText by remember(card.id) {
+        mutableStateOf(card.dueDate.orEmpty())
+    }
+
+    var tagsText by remember(card.id) {
+        mutableStateOf(card.tags.joinToString(", "))
+    }
+
+    var detailsExpanded by remember(card.id) {
+        mutableStateOf(false)
+    }
+
+    var shouldRequestTitleFocus by remember(
+        card.id,
+        autoFocusPrimaryInput
+    ) {
         mutableStateOf(autoFocusPrimaryInput)
     }
 
@@ -96,176 +132,331 @@ fun UniversalCardEditor(
         shouldRequestTitleFocus = autoFocusPrimaryInput
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(32.dp),
-        verticalArrangement = Arrangement.spacedBy(22.dp)
-    ) {
-        CcPrimaryButton(
-            text = "← Terug",
-            onClick = onBack
+    fun saveCard() {
+        val normalizedDueDate = normalizeDueDateInput(
+            input = dueDateText,
+            fallback = card.dueDate
         )
 
-        CcHeader(
-            title = title.ifBlank { "Nieuwe Card" },
-            subtitle = "${card.category.label()} • ${priority.label()} • ${status.label()}"
+        val updatedCard = card.copy(
+            title = title,
+            description = description,
+            notes = notes,
+            category = destination.toCardCategory(card.category),
+            priority = priority,
+            status = status,
+            favorite = favorite,
+            destination = destination,
+            dueDate = normalizedDueDate,
+            tags = tagsText.toTagList()
         )
 
-        Text(
-            text = "S Pen eerst: schrijf of annoteer waar mogelijk met de pen. Toetsenbord blijft beschikbaar voor snelle correcties.",
-            color = CcMuted,
-            fontSize = 16.sp
-        )
+        CardRepository.updateCard(updatedCard)
+        onSave(updatedCard)
+    }
 
-        SectionTitle("Titel of handgeschreven kop")
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = Color.Transparent,
+        bottomBar = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF16130F))
+                    .padding(
+                        horizontal = 24.dp,
+                        vertical = 16.dp
+                    )
+            ) {
+                CcActionBar(
+                    onBack = onBack,
+                    onDelete = {
+                        CardRepository.deleteCard(card.id)
+                        onDelete()
+                    },
+                    onSave = {
+                        saveCard()
+                    }
+                )
+            }
+        }
+    ) { innerPadding ->
 
-        SpenInputField(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 120.dp),
-            value = title,
-            onValueChange = { title = it },
-            placeholder = "Schrijf direct je kop met S Pen of typ als aanvulling",
-            minLines = 3,
-            singleLine = false,
-            autofocus = shouldRequestTitleFocus,
-            onAutofocusApplied = { shouldRequestTitleFocus = false }
-        )
+                .fillMaxSize()
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+                .padding(
+                    horizontal = 32.dp,
+                    vertical = 28.dp
+                ),
+            verticalArrangement = Arrangement.spacedBy(22.dp)
+        ) {
+            CcHeader(
+                title = title.ifBlank { "Nieuwe Card" },
+                subtitle = "Ruimte om te schrijven, ordenen en verder te denken."
+            )
 
-        SectionTitle("Handgeschreven notities")
+            if (card.originalGedachteId != null) {
+                OriginalThoughtSection(
+                    gedachteId = card.originalGedachteId,
+                    preview = card.originalGedachtePreview
+                )
+            }
 
-        SpenInputField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 240.dp),
-            value = notes,
-            onValueChange = { notes = it },
-            placeholder = "Schrijf direct met S Pen of typ in dit notitieveld",
-            minLines = 10,
-            minHeight = 240.dp,
-            singleLine = false
-        )
+            SectionTitle("Titel")
 
-        SectionTitle("Categorie")
+            SpenInputField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 100.dp),
+                value = title,
+                onValueChange = {
+                    title = it
+                },
+                placeholder = "Geef je gedachte een korte kop",
+                minLines = 2,
+                singleLine = false,
+                autofocus = shouldRequestTitleFocus,
+                onAutofocusApplied = {
+                    shouldRequestTitleFocus = false
+                }
+            )
 
-        ChoiceGroup {
-            userFacingDestinations.forEach { item ->
-                ChoiceChip(item.label(), destination == item) {
-                    destination = item
+            SectionTitle("Schrijfruimte")
+
+            SpenInputField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 520.dp),
+                value = notes,
+                onValueChange = {
+                    notes = it
+                },
+                placeholder = "Schrijf hier verder met je S Pen of toetsenbord",
+                minLines = 20,
+                minHeight = 520.dp,
+                singleLine = false
+            )
+
+            DetailsHeader(
+                expanded = detailsExpanded,
+                onClick = {
+                    detailsExpanded = !detailsExpanded
+                }
+            )
+
+            AnimatedVisibility(
+                visible = detailsExpanded
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(22.dp)
+                ) {
+                    SectionTitle("Categorie")
+
+                    ChoiceGroup {
+                        userFacingDestinations.forEach { item ->
+                            ChoiceChip(
+                                text = item.label(),
+                                selected = destination == item,
+                                onClick = {
+                                    destination = item
+                                }
+                            )
+                        }
+                    }
+
+                    SectionTitle("Status")
+
+                    ChoiceGroup {
+                        ChoiceChip(
+                            text = "Open",
+                            selected = status == CardStatus.OPEN,
+                            onClick = {
+                                status = CardStatus.OPEN
+                            }
+                        )
+
+                        ChoiceChip(
+                            text = "Voltooid",
+                            selected = status == CardStatus.COMPLETED,
+                            onClick = {
+                                status = CardStatus.COMPLETED
+                            }
+                        )
+                    }
+
+                    SectionTitle("Prioriteit")
+
+                    ChoiceGroup {
+                        ChoiceChip(
+                            text = "Laag",
+                            selected = priority == CardPriority.LOW,
+                            onClick = {
+                                priority = CardPriority.LOW
+                            }
+                        )
+
+                        ChoiceChip(
+                            text = "Normaal",
+                            selected = priority == CardPriority.NORMAL,
+                            onClick = {
+                                priority = CardPriority.NORMAL
+                            }
+                        )
+
+                        ChoiceChip(
+                            text = "Hoog",
+                            selected = priority == CardPriority.HIGH,
+                            onClick = {
+                                priority = CardPriority.HIGH
+                            }
+                        )
+                    }
+
+                    SectionTitle("Aandachtsdatum")
+
+                    SpenInputField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = dueDateText,
+                        onValueChange = {
+                            dueDateText = it
+                        },
+                        placeholder = "jjjj-mm-dd of dd-mm-jjjj",
+                        minLines = 1,
+                        singleLine = true
+                    )
+
+                    SectionTitle("Tags")
+
+                    SpenInputField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = tagsText,
+                        onValueChange = {
+                            tagsText = it
+                        },
+                        placeholder = "Werk, overleg",
+                        minLines = 1,
+                        singleLine = true
+                    )
+
+                    Text(
+                        text = "Gebruik korte tags, gescheiden door komma’s.",
+                        color = CcMuted,
+                        fontSize = 14.sp
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                favorite = !favorite
+                            },
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Checkbox(
+                            checked = favorite,
+                            onCheckedChange = {
+                                favorite = it
+                            }
+                        )
+
+                        Text(
+                            text = "Favoriet",
+                            color = CcText,
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(top = 11.dp)
+                        )
+                    }
                 }
             }
         }
+    }
+}
 
-        SectionTitle("Status")
-
-        ChoiceGroup {
-            ChoiceChip("Open", status == CardStatus.OPEN) { status = CardStatus.OPEN }
-            ChoiceChip("Voltooid", status == CardStatus.COMPLETED) { status = CardStatus.COMPLETED }
-        }
-
-        SectionTitle("Prioriteit")
-
-        ChoiceGroup {
-            ChoiceChip("Laag", priority == CardPriority.LOW) { priority = CardPriority.LOW }
-            ChoiceChip("Normaal", priority == CardPriority.NORMAL) { priority = CardPriority.NORMAL }
-            ChoiceChip("Hoog", priority == CardPriority.HIGH) { priority = CardPriority.HIGH }
-        }
-
-        SectionTitle("Aandachtsdatum")
-
-        SpenInputField(
-            modifier = Modifier.fillMaxWidth(),
-            value = dueDateText,
-            onValueChange = { dueDateText = it },
-            placeholder = "jjjj-mm-dd of dd-mm-jjjj",
-            minLines = 1,
-            singleLine = true
-        )
-
-        SectionTitle("Tags")
-
-        SpenInputField(
-            modifier = Modifier.fillMaxWidth(),
-            value = tagsText,
-            onValueChange = { tagsText = it },
-            minLines = 1,
-            singleLine = true,
-            placeholder = "Werk, Overleg"
+@Composable
+private fun OriginalThoughtSection(
+    gedachteId: Long,
+    preview: String?
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(Color(0xFF211E18))
+            .border(
+                width = 1.dp,
+                color = CcGold.copy(alpha = 0.45f),
+                shape = RoundedCornerShape(18.dp)
+            )
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Text(
+            text = "Oorspronkelijke gedachte",
+            color = CcGold,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold
         )
 
         Text(
-            text = "Gebruik korte tags, gescheiden door komma's. Handschrift blijft het vertrekpunt; tags zijn alleen structuur.",
-            color = CcMuted,
-            fontSize = 14.sp
+            text = "Gedachte #$gedachteId",
+            color = CcText,
+            fontSize = 17.sp
         )
 
-        if (card.originalGedachteId != null) {
-            SectionTitle("Oorspronkelijke gedachte")
-
+        if (!preview.isNullOrBlank()) {
             Text(
-                text = "Gedachte #${card.originalGedachteId}",
-                color = CcText,
-                fontSize = 18.sp
+                text = preview,
+                color = CcMuted,
+                fontSize = 16.sp
             )
+        }
+    }
+}
 
-            if (!card.originalGedachtePreview.isNullOrBlank()) {
-                Text(
-                    text = card.originalGedachtePreview,
-                    color = CcMuted,
-                    fontSize = 16.sp
-                )
+@Composable
+private fun DetailsHeader(
+    expanded: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color(0xFF211E18))
+            .border(
+                width = 1.dp,
+                color = CcMuted.copy(alpha = 0.4f),
+                shape = RoundedCornerShape(16.dp)
+            )
+            .clickable {
+                onClick()
             }
-        }
-
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Checkbox(
-                checked = favorite,
-                onCheckedChange = { favorite = it }
+            .padding(
+                horizontal = 20.dp,
+                vertical = 16.dp
             )
-
-            Text(
-                text = "Favoriet",
-                color = CcText,
-                fontSize = 18.sp
-            )
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        CcActionBar(
-            onBack = onBack,
-            onDelete = {
-                CardRepository.deleteCard(card.id)
-                onDelete()
+    ) {
+        Text(
+            text = if (expanded) {
+                "▼ Details verbergen"
+            } else {
+                "▶ Details tonen"
             },
-            onSave = {
-                val normalizedDueDate = normalizeDueDateInput(
-                    input = dueDateText,
-                    fallback = card.dueDate
-                )
-                val updatedCard = card.copy(
-                    title = title,
-                    description = description,
-                    notes = notes,
-                    category = destination.toCardCategory(card.category),
-                    priority = priority,
-                    status = status,
-                    favorite = favorite,
-                    destination = destination,
-                    dueDate = normalizedDueDate,
-                    tags = tagsText.toTagList()
-                )
-                CardRepository.updateCard(updatedCard)
-                onSave(updatedCard)
-            }
+            color = CcGold,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
         )
     }
 }
 
 @Composable
-private fun SectionTitle(text: String) {
+private fun SectionTitle(
+    text: String
+) {
     Text(
         text = text,
         color = CcGold,
@@ -276,7 +467,9 @@ private fun SectionTitle(text: String) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ChoiceGroup(content: @Composable () -> Unit) {
+private fun ChoiceGroup(
+    content: @Composable () -> Unit
+) {
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -292,51 +485,87 @@ private fun ChoiceChip(
     onClick: () -> Unit
 ) {
     Text(
-        text = if (selected) "● $text" else "○ $text",
+        text = if (selected) {
+            "● $text"
+        } else {
+            "○ $text"
+        },
         color = CcText,
         fontSize = 17.sp,
-        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+        fontWeight = if (selected) {
+            FontWeight.Bold
+        } else {
+            FontWeight.Normal
+        },
         modifier = Modifier
             .clip(RoundedCornerShape(999.dp))
-            .background(if (selected) CcGold.copy(alpha = 0.28f) else Color(0xFF211E18))
+            .background(
+                if (selected) {
+                    CcGold.copy(alpha = 0.28f)
+                } else {
+                    Color(0xFF211E18)
+                }
+            )
             .border(
                 width = 1.dp,
-                color = if (selected) CcGold else CcMuted.copy(alpha = 0.55f),
+                color = if (selected) {
+                    CcGold
+                } else {
+                    CcMuted.copy(alpha = 0.55f)
+                },
                 shape = RoundedCornerShape(999.dp)
             )
-            .clickable { onClick() }
-            .padding(horizontal = 18.dp, vertical = 10.dp)
+            .clickable {
+                onClick()
+            }
+            .padding(
+                horizontal = 18.dp,
+                vertical = 10.dp
+            )
     )
 }
 
-private fun normalizeDueDateInput(input: String, fallback: String?): String? {
+private fun normalizeDueDateInput(
+    input: String,
+    fallback: String?
+): String? {
     val trimmed = input.trim()
-    if (trimmed.isEmpty()) return null
+
+    if (trimmed.isEmpty()) {
+        return null
+    }
 
     return parseIsoDate(trimmed)
         ?: parseDutchDate(trimmed)
         ?: fallback
 }
 
-private fun parseIsoDate(value: String): String? = try {
+private fun parseIsoDate(
+    value: String
+): String? = try {
     LocalDate.parse(value).toString()
 } catch (_: DateTimeParseException) {
     null
 }
 
-private fun parseDutchDate(value: String): String? = try {
-    LocalDate.parse(value, DateTimeFormatter.ofPattern("dd-MM-yyyy")).toString()
+private fun parseDutchDate(
+    value: String
+): String? = try {
+    LocalDate.parse(
+        value,
+        DateTimeFormatter.ofPattern("dd-MM-yyyy")
+    ).toString()
 } catch (_: DateTimeParseException) {
     null
 }
 
-private fun com.cc.commandcenter.model.CardCategory.label() = when (this) {
-    com.cc.commandcenter.model.CardCategory.FOCUS -> "Focus"
-    com.cc.commandcenter.model.CardCategory.MY_TASKS -> "Mijn taken"
-    com.cc.commandcenter.model.CardCategory.WAITING -> "Reactie afwachten"
-    com.cc.commandcenter.model.CardCategory.OTHERS -> "Taken van anderen"
-    com.cc.commandcenter.model.CardCategory.IDEAS -> "Ideeën"
-    com.cc.commandcenter.model.CardCategory.ARCHIVE -> "Archief"
+private fun CardCategory.label() = when (this) {
+    CardCategory.FOCUS -> "Focus"
+    CardCategory.MY_TASKS -> "Mijn taken"
+    CardCategory.WAITING -> "Reactie afwachten"
+    CardCategory.OTHERS -> "Taken van anderen"
+    CardCategory.IDEAS -> "Ideeën"
+    CardCategory.ARCHIVE -> "Archief"
 }
 
 private fun CardPriority.label() = when (this) {
@@ -373,13 +602,16 @@ private val userFacingDestinations = listOf(
     CardDestination.ARCHIVE
 )
 
-private fun CardDestination.toUserFacingDestination(category: CardCategory): CardDestination = when (this) {
+private fun CardDestination.toUserFacingDestination(
+    category: CardCategory
+): CardDestination = when (this) {
     CardDestination.FOCUS,
     CardDestination.MY_TASKS,
     CardDestination.WAITING,
     CardDestination.OTHERS,
     CardDestination.IDEAS,
     CardDestination.ARCHIVE -> this
+
     CardDestination.TODAY,
     CardDestination.PROJECT,
     CardDestination.CALENDAR,
@@ -394,7 +626,9 @@ private fun CardDestination.toUserFacingDestination(category: CardCategory): Car
     }
 }
 
-private fun CardDestination.toCardCategory(currentCategory: CardCategory): CardCategory = when (this) {
+private fun CardDestination.toCardCategory(
+    currentCategory: CardCategory
+): CardCategory = when (this) {
     CardDestination.FOCUS -> CardCategory.FOCUS
     CardDestination.MY_TASKS -> CardCategory.MY_TASKS
     CardDestination.WAITING -> CardCategory.WAITING
@@ -402,12 +636,18 @@ private fun CardDestination.toCardCategory(currentCategory: CardCategory): CardC
     CardDestination.IDEAS -> CardCategory.IDEAS
     CardDestination.ARCHIVE -> CardCategory.ARCHIVE
     CardDestination.TODAY -> CardCategory.FOCUS
+
     CardDestination.PROJECT,
     CardDestination.CALENDAR,
     CardDestination.CONTACT,
     CardDestination.INBOX -> currentCategory
 }
 
-private fun String.toTagList(): List<String> = split(",")
-    .map { it.trim() }
-    .filter { it.isNotEmpty() }
+private fun String.toTagList(): List<String> =
+    split(",")
+        .map {
+            it.trim()
+        }
+        .filter {
+            it.isNotEmpty()
+        }
